@@ -1,8 +1,10 @@
 ## Getting Started
 
-git clone me
+Artists, you can fork this repo, or create your own branch in this repo. If you plan on contributing your glitch effects to the permanent library, it may be easier to create a branch in this repo... 
 
-npm run dev
+``git clone {me}``
+
+```npm run dev```
 
 All the code you edit should be in generator/
 generate.js does the actual drawing to canvas, assets/ is a folder of assets (load them via preload)
