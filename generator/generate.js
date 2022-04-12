@@ -63,18 +63,16 @@ function applyMask(source, target) {
 // random: a function to replace Math.random() (based on txn_hash)
 // assets: an object with preloaded image assets from `export getAssets`, keyname --> asset
 export async function draw(sketch, assets) {
-  //Main Parameters
   let startmilli = Date.now();
   //Fixed Canvas Size
   WIDTH = 640;
   HEIGHT = 640;
   DIM = Math.min(WIDTH, HEIGHT);
-  G = {}
-  G["WIDTH"] = WIDTH;
-  G["HEIGHT"] = HEIGHT;
-  G["DIM"] = DIM;
-  G["sketch"] = sketch;
-  // r = random;
+  // G = {}
+  // G["WIDTH"] = WIDTH;
+  // G["HEIGHT"] = HEIGHT;
+  // G["DIM"] = DIM;
+  // G["sketch"] = sketch;
   sk = sketch;
   console.log("Starting");
   sketch.createCanvas(WIDTH, HEIGHT);
