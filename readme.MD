@@ -6,12 +6,13 @@ Artists, you can fork this repo, or create your own branch in this repo. If you 
 
 ```npm run dev```
 
-All the code you edit should be in generator/
-generate.js does the actual drawing to canvas, assets/ is a folder of assets (load them via preload)
+All the code you edit should be in `generator/`
+
+`generate.js` does the actual drawing to canvas, `assets/` is a folder of assets (load them via preload)
 
 ## Usage
 
-from the generator/ directory run "node test" to make sure the shell is working. If you run from the main directory, it may not find your assets
+from the `generator/` directory run ```node test``` to make sure the shell is working. If you run from the main directory, it may not find your assets
 folder.
 
 generate.js is the primary driver. Run glitch effects from there and import whatever effects and utilities you need. 
