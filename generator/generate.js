@@ -62,12 +62,13 @@ function applyMask(source, target) {
 // txn_hash: the transaction hash that minted this nft (faked in sandbox)
 // random: a function to replace Math.random() (based on txn_hash)
 // assets: an object with preloaded image assets from `export getAssets`, keyname --> asset
-export async function draw(sketch, assets) {
+export async function draw(sketch, assets, raw_assets) {
   let startmilli = Date.now();
   //Fixed Canvas Size
-  WIDTH = 640;
-  HEIGHT = 640;
-  DIM = Math.min(WIDTH, HEIGHT);
+  WIDTH = 2000;
+  HEIGHT = 3000;
+  // DIM = Math.min(WIDTH, HEIGHT);
+
   // G = {}
   // G["WIDTH"] = WIDTH;
   // G["HEIGHT"] = HEIGHT;
@@ -87,17 +88,19 @@ export async function draw(sketch, assets) {
      Make a copy of the raw image for reference. 
      If the raw image is too large, a random section is chosen to match our fixed canvas size.
     */
-    G["ref"] = sk.createGraphics(DIM, DIM);
-    const copyStartX = Math.floor(random() * (assets[img_name].width - WIDTH));
-    const copyStartY = Math.floor(random() * (assets[img_name].height - HEIGHT));
-    G["ref"].copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
-
+    // const copyStartX = Math.floor(random() * (assets[img_name].width - WIDTH));
+    // const copyStartY = Math.floor(random() * (assets[img_name].height - HEIGHT));
+    // G["ref"].copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
+    let imgPath = "assets/" + raw_assets[0]["name"] + "/" + raw_assets[0]["files"][0]
+    console.log("raw_assets[]0 name: " + raw_assets[0]["name"])
+    console.log("file name: " + imgPath)
+    let img = await sketch.loadImage(imgPath);
     /* Copy the Reference image to the main Sketch for manipulation */
-    sk.image(G["ref"], 0, 0);
+    sk.image(img, 0, 0);
 
     /***********IMAGE MANIPULATION GOES HERE**********/
-    let rainWeight = .5;
-    diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
+    // let rainWeight = .5;
+    // diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
     /***********IMAGE MANIPULATION ENDS HERE**********/
 
 
@@ -117,6 +120,6 @@ export async function draw(sketch, assets) {
 
     return sketch.getCanvasDataURL(sketch);
   } catch (e) {
-    console.error(e);
+    console.error(e)
   }
 }

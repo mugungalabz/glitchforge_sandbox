@@ -8,6 +8,16 @@ async function run() {
   const random = seedrandom('45756');
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
+  var assetPath = 'assets/'
+  var files = fs.readdirSync(assetPath)
+  // console.log("files: " + files)
+  let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory());
+  let raw_assets = []
+  for (let af of assetFolders) {
+    let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png'));
+    raw_assets.push({ "name": af, "files": files });
+  }
+  console.log("assetFolders: " + assetFolders)
   const final = new Promise(async (resolve, reject) => {
     for (let i = 0; i < sketchCount; i++) {
       let p5instance = await p5.createSketch(async (sketch) => {
@@ -33,7 +43,7 @@ async function run() {
             }
 
             console.log("Calling setup..");
-            resolve(await generator.draw(sketch, assets));
+            resolve(await generator.draw(sketch, assets, raw_assets));
 
             const features = generator.getFeatures();
             const attributes = [];
