@@ -1,10 +1,12 @@
-import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
+import { distancePoint2Line, wAlpha, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
 import { diceFrame, init as eInit } from "./effects.js";
+import react from "react";
+import { Linter } from "eslint";
 
 var G;
 var sk;
 var r; //assign random hash accees
-var DIM; var WIDTH; var HEIGHT;
+var DIM; var W; var H;
 var random = null;
 
 // Guaranteed to be called first.
@@ -36,10 +38,56 @@ export function getFeatures() {
 /*
   Get a random number between a and b
 */
-function rbtw(a, b, random) {
-  return a + (b - a) * random();
+function rbtw(a, b, r) {
+  return a + (b - a) * Math.random();
 }
 
+function ibtw(a, b, r) {
+  return Math.floor(rbtw(a, b, Math.random()));
+}
+// {
+//   "volume": 1,
+//     "name": "Dapp",
+//       "project": "dapp",
+//         "colors": [
+//           "#C5C3A8",
+//           "#B7B6A4",
+//           "#A72517",
+//           "#07090F"
+//         ]
+// },
+// {
+//   "volume": 1,
+//     "name": "DappII",
+//       "project": "dapp",
+//         "colors": [
+//           "#B7B6A4",
+//           "#71726C",
+//           "#A72517",
+//           "#7C1F18",
+//           "#322D28",
+//           "#320502",
+//           "#07090F"
+//         ]
+// },
+// {
+//   "volume": 1,
+//     "name": "DappIII",
+//       "project": "dapp",
+//         "colors": [
+//           "#B7B6A4",
+//           "#9F9F8E",
+//           "#8F8A6E",
+//           "#71726C",
+//           "#58544D",
+//           "#A72517",
+//           "#7C1F18",
+//           "#322D28",
+//           "#50120C",
+//           "#2E0402",
+//           "#080A10"
+//         ]
+// }
 
 function getMask(DIM) {
   var mask = sk.createGraphics(DIM, DIM);
@@ -64,9 +112,10 @@ function applyMask(source, target) {
 // assets: an object with preloaded image assets from `export getAssets`, keyname --> asset
 export async function draw(sketch, assets, raw_assets) {
   let startmilli = Date.now();
+  random = Math.random()
   //Fixed Canvas Size
-  WIDTH = 2000;
-  HEIGHT = 3000;
+  W = 2000;
+  H = 3000;
   // DIM = Math.min(WIDTH, HEIGHT);
 
   // G = {}
@@ -76,13 +125,25 @@ export async function draw(sketch, assets, raw_assets) {
   // G["sketch"] = sketch;
   sk = sketch;
   console.log("Starting");
-  sketch.createCanvas(WIDTH, HEIGHT);
-
+  sketch.createCanvas(W, H);
+  let mainColor = sk.color("#CD5061")
   try {
     console.log("Looping...");
-    console.log("WIDTH, HEIGHT: ", WIDTH, HEIGHT);
-    // const img_name = 'awaken_raw_' + Math.floor((random() * preload.length) + 1) + EXT;
+    console.log("W, H: ", W, H);
+    // const img_name = 'awaken_rawwAlpha_' + Math.floor((random() * preload.length) + 1) + EXT;
     const img_name = 'background';
+
+    //           "#B7B6A4",
+    //           "#9F9F8E",
+    //           "#8F8A6E",
+    //           "#71726C",
+    //           "#58544D",
+    //           "#A72517",
+    //           "#7C1F18",
+    //           "#322D28",
+    //           "#50120C",
+    //           "#2E0402",
+    //           "#080A10"
 
     /*
      Make a copy of the raw image for reference. 
@@ -97,11 +158,52 @@ export async function draw(sketch, assets, raw_assets) {
     let img = await sketch.loadImage(imgPath);
     /* Copy the Reference image to the main Sketch for manipulation */
     sk.image(img, 0, 0);
+    sk.background(243, 243, 243)
+
+    let imagesUsed = []
+
+    // console.log("maincolor: " + mainColor)
+    // let k = wAlpha(mainColor, 100, sk)
+    // sk.fill(k)
+    // console.log("k alpha:" + k)
+    // sk.rect(0, 0, W, H)
+    //One from each asset folder
 
     /***********IMAGE MANIPULATION GOES HERE**********/
     // let rainWeight = .5;
     // diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
     /***********IMAGE MANIPULATION ENDS HERE**********/
+    sk.strokeWeight(H / 200)
+    sk.stroke(13, 13, 13)
+    sk.rect(W * .05, W * .05, W * .9, W * .9)
+    sk.stroke(mainColor)
+
+    for (let i = 0; i < 3; i++) {
+      sk.line(Math.random() * H, Math.random() * H, Math.random() * H, Math.random() * H)
+    }
+    //get 3 random numbers
+    let n = 2
+    let folders_to_use = []
+    while (folders_to_use.length < n) {
+      let r = Math.floor(Math.random() * raw_assets.length)
+      if (!folders_to_use.includes(r)) {
+        folders_to_use.push(r)
+      }
+      if (raw_assets.length < n) {
+        console.log("LOOKING FOR MORE FOLDER THAN EXISTS")
+        break
+      }
+    }
+    console.log("FOLDER INDEXES FOUIND: " + folders_to_use)
+    for (let f of folders_to_use) {
+      // let folder = raw_assets[i]["name"]
+      let file = ibtw(0, raw_assets[f]["files"].length)
+      console.log("get image: " + raw_assets[f]["name"] + "," + file)
+      let currImgPath = "assets/" + raw_assets[f]["name"] + "/" + raw_assets[f]["files"][file]
+      let currImg = await sketch.loadImage(currImgPath);
+      imagesUsed.push(currImg);
+      sk.image(currImg, H * .05, H * .05, H * .9, H * .9));
+    }
 
 
     /*

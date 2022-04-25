@@ -11,7 +11,7 @@ async function run() {
   var assetPath = 'assets/'
   var files = fs.readdirSync(assetPath)
   // console.log("files: " + files)
-  let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory());
+  let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory() && !f.startsWith('.'));
   let raw_assets = []
   for (let af of assetFolders) {
     let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png'));

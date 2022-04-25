@@ -150,8 +150,8 @@ export function lightenHSL(color, n) {
     color -> color to override
     a -> new alpha value
 */
-export function wAlpha(color, a) {
-  return [color[0], color[1], color[2], a];
+export function wAlpha(color, a, sk) {
+  return [sk.red(color), sk.green(color), sk.blue(color), a];
 }
 /*
   Given two lines, get the intersection point 
