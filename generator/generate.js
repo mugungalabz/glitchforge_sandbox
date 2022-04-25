@@ -62,17 +62,17 @@ function applyMask(source, target) {
 // txn_hash: the transaction hash that minted this nft (faked in sandbox)
 // random: a function to replace Math.random() (based on txn_hash)
 // assets: an object with preloaded image assets from `export getAssets`, keyname --> asset
-export async function draw(sketch, assets) {
+export async function draw(sketch, assets, raw_asset_folders) {
   let startmilli = Date.now();
-  //Fixed Canvas Size
+
+  //Fixed Canvas Size, change as needed
   WIDTH = 640;
   HEIGHT = 640;
+
+  //Populate the features object like so, it is automatically exported. 
+  features['Trait Name'] = "Trait Value";
   DIM = Math.min(WIDTH, HEIGHT);
-  // G = {}
-  // G["WIDTH"] = WIDTH;
-  // G["HEIGHT"] = HEIGHT;
-  // G["DIM"] = DIM;
-  // G["sketch"] = sketch;
+
   sk = sketch;
   console.log("Starting");
   sketch.createCanvas(WIDTH, HEIGHT);
@@ -87,13 +87,13 @@ export async function draw(sketch, assets) {
      Make a copy of the raw image for reference. 
      If the raw image is too large, a random section is chosen to match our fixed canvas size.
     */
-    G["ref"] = sk.createGraphics(DIM, DIM);
+    let referenceGraphic = sk.createGraphics(DIM, DIM);
     const copyStartX = Math.floor(random() * (assets[img_name].width - WIDTH));
     const copyStartY = Math.floor(random() * (assets[img_name].height - HEIGHT));
-    G["ref"].copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
+    referenceGraphic.copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
 
     /* Copy the Reference image to the main Sketch for manipulation */
-    sk.image(G["ref"], 0, 0);
+    sk.image(referenceGraphic, 0, 0);
 
     /***********IMAGE MANIPULATION GOES HERE**********/
     let rainWeight = .5;

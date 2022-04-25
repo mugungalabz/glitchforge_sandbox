@@ -5,9 +5,25 @@ import fs from 'fs';
 
 async function run() {
   console.log("Setting up sketch: ");
-  const random = seedrandom('45756');
+  let randomSeed = Math.random() + ""
+  let constantSeed = "ADSFSEED"
+
+  //Uncomment this to change seed with every run
+  const random = seedrandom(randomSeed);
+  //Uncomment this to use the same seed each run
+  // const random = seedrandom(constantSeed);
+
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
+
+
+  let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory() && !f.startsWith('.'));
+  let raw_asset_folders = []
+  for (let af of assetFolders) {
+    let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png'));
+    raw_asset_folders.push({ "name": af, "files": files });
+  }
+
   const final = new Promise(async (resolve, reject) => {
     for (let i = 0; i < sketchCount; i++) {
       let p5instance = await p5.createSketch(async (sketch) => {
@@ -33,7 +49,7 @@ async function run() {
             }
 
             console.log("Calling setup..");
-            resolve(await generator.draw(sketch, assets));
+            resolve(await generator.draw(sketch, assets, raw_asset_folders));
 
             const features = generator.getFeatures();
             const attributes = [];
