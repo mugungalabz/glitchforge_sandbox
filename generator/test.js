@@ -5,7 +5,8 @@ import fs from 'fs';
 
 async function run() {
   console.log("Setting up sketch: ");
-  const random = seedrandom('45756');
+  const random = seedrandom(Math.random() + "");
+  // const random = seedrandom('45756');
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
   var assetPath = 'assets/'
@@ -31,16 +32,16 @@ async function run() {
             const assets = {};
             const preload = generator.getAssets()
             console.log("Loading assets: ", preload);
-            if (preload) {
-              for (let index in preload) {
-                let filename = preload[index];
-                console.log("Preloading: ", filename, " Index: ", index);
-                if (!filename.includes('..')) {
-                  console.log("aCurrent directory:", process.cwd())
-                  assets[index] = await sketch.loadImage('./assets/' + filename);
-                }
-              }
-            }
+            // if (preload) {
+            //   for (let index in preload) {
+            //     let filename = preload[index];
+            //     console.log("Preloading: ", filename, " Index: ", index);
+            //     if (!filename.includes('..')) {
+            //       console.log("aCurrent directory:", process.cwd())
+            //       assets[index] = await sketch.loadImage('./assets/' + filename);
+            //     }
+            //   }
+            // }
 
             console.log("Calling setup..");
             resolve(await generator.draw(sketch, assets, raw_assets));

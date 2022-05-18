@@ -2,6 +2,30 @@
   Commonly used Math, Color, and other utilities
 */
 
+export function saveRandomSectionsOfImage(sk, image, n, H, W, name) {
+
+  for (let i = 0; i < n; i++) {
+    let section = randomSectionOfImage(sk, image, H, W);
+    sk.image(section, 0, 0);
+    sk.saveCanvas(sk, name + "-" + i, 'png');
+  }
+}
+
+export function randomSectionOfImage(sk, img, H, W) {
+  if (img.width < W) {
+    console.log("image width too small: " + img.width + " < " + W)
+    exit()
+  }
+  if (img.height < H) {
+    console.log("image height too small: " + img.height + " < " + H)
+    exit()
+  }
+
+  const copyStartX = Math.floor(Math.random() * (img.width - W));
+  const copyStartY = Math.floor(Math.random() * (img.height - H));
+  const imageSection = img.get(copyStartX, copyStartY, W, H);
+  return imageSection;
+}
 /*
   Given a point and line defined by two points, return the 
   distance from the point to the line.

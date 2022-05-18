@@ -3,3 +3,4 @@ generator/asdf.js
 generator/assets/
 generator/*.png
 node_modules/*
+*.png
