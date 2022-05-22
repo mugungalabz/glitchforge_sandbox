@@ -12,6 +12,7 @@ var random = null;
 var few_shapes = []
 var backgrounds = []
 var many_shapes = []
+var cubes = []
 var mainColor
 var blackColor
 var l, t, r, b, fw, fh
@@ -112,7 +113,9 @@ export async function draw(sketch, assets, raw_assets) {
     backgrounds = []
     many_shapes = []
     for (let ra of raw_assets) {
-      if (ra["name"].includes("FEW")) {
+      if (ra["name"].includes("CUBE")) {
+        cubes.push(ra)
+      } else if (ra["name"].includes("FEW")) {
         few_shapes.push(ra)
       } else if (ra["name"].includes("MANY")) {
         many_shapes.push(ra)
@@ -131,7 +134,7 @@ export async function draw(sketch, assets, raw_assets) {
     //   let image = await sketch.loadImage(imgPath)
     //   saveRandomSectionsOfImage(sk, image, 50, H, W, "shrunk_backgrounds/" + backgrounds[0]["files"][i])
     // }
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 13; i++) {
       console.log("creating image ##############: " + i)
       await createDapp(sk, i)
 
@@ -185,7 +188,7 @@ async function createDapp(sk, n) {
   orthShape = p(.5) ? 0 : 1
   sk.createCanvas(W, H);
   sk.clear();
-  sk.strokeCap(SQUARE)
+  sk.strokeCap(sk.SQUARE)
   // sk.noStroke()
   // sk.fill(200, 200, 200)
   sk.background(165, 165, 165)
@@ -315,7 +318,7 @@ async function createDapp(sk, n) {
   //determine which shapes to use
   let currImages = []
   if (p(.005)) {
-    let many = rFrom([1, 2])
+    let many = rFrom([1])
     for (let i = 0; i < many; i++) {
       let dirIdx = ibtw(0, many_shapes.length)
       // let file = rFrom(many_shapes[dirIdx]["files"])
@@ -327,7 +330,7 @@ async function createDapp(sk, n) {
     // many_shapes
     // sk.image(currImg, W * .05, W * .05, W * .9, W * .9);
   } else {
-    let few = rFrom([3, 5])
+    let few = rFrom([2, 4])
     for (let i = 0; i < few; i++) {
       let dirIdx = ibtw(0, few_shapes.length)
       // let file = rFrom(many_shapes[dirIdx]["files"])
@@ -338,6 +341,13 @@ async function createDapp(sk, n) {
     // few_shapes
     // sk.image(currImg, W * .05, W * .05, W * .9, W * .9);
   }
+  //add cube: 
+  let dirIdx = ibtw(0, cubes.length)
+  // let file = rFrom(many_shapes[dirIdx]["files"])
+  let currImgPath = "assets/" + cubes[dirIdx]["name"] + "/" + rFrom(cubes[dirIdx]["files"])
+  console.log("currImgPath: " + currImgPath)
+  let currImg = await sk.loadImage(currImgPath);
+  currImages.push(currImg)
   // if (p(1.75)) {
 
   //   squaresToDraw.push(...randomPointInFrame(), Math.random() * W * .5 + W * .1)
@@ -356,10 +366,10 @@ async function createDapp(sk, n) {
     let side = W * .05 + Math.random() * W * (Math.random() < .25 ? .4 : .3)
     let numSides = 4
     sk.fill(shapeColor)
-    let minDistFromFrame = Math.sqrt(2 * side / 2 * side / 2)
+    let minDistFromFrame = Math.sqrt(2 * (side / 2) * (side / 2))
     if (!hasTwin) {
-      let shapeX = l + minDistFromFrame + Math.random() * (fw - minDistFromFrame)
-      let shapeY = t + minDistFromFrame + Math.random() * (fh - minDistFromFrame)
+      let shapeX = l + minDistFromFrame + Math.random() * (fw - minDistFromFrame * 2)
+      let shapeY = t + minDistFromFrame + Math.random() * (fh - minDistFromFrame * 2)
       randomShape(sk, shapeX, shapeY, side, angle, numSides)
     }
     // else {
@@ -389,7 +399,7 @@ async function createDapp(sk, n) {
     console.log("lines")
     sk.stroke(linesColor)
     sk.strokeWeight(H / 200)
-    if (p(.005)) {
+    if (p(.5)) {
       console.log("image lines")
       let linesFromImage = rFrom(currImages)
       let shapeAngle = await findAngleOfShape(sk, linesFromImage)
@@ -402,8 +412,8 @@ async function createDapp(sk, n) {
       )
       if (p(.4)) {
         let perp = shapeAngle[0] + Math.PI / 2
-        let px = Math.random() * W * .9 + W * .05
-        let py = Math.random() * W * .9 + W * .05
+        let px = Math.random() * fw + l
+        let py = Math.random() * fh + t
         sk.strokeWeight(H / 200)
         sk.line(px, py, px + d * Math.cos(perp), py + d * Math.sin(perp))
       }
@@ -416,10 +426,10 @@ async function createDapp(sk, n) {
       let hstart = W * rbtw(globalPadding, 1 - hpct - globalPadding)
       if (lineVert) {
         sk.line(hstart, offset, hstart + lineHeight, offset)
-        if (p(5.5)) {
+        if (p(0.6)) {
           offset += W * .05
           sk.line(hstart, offset, hstart + lineHeight, offset)
-          if (p(5.5)) {
+          if (p(.6)) {
             offset += W * .05
             sk.line(hstart, offset, hstart + lineHeight, offset)
           }
@@ -462,10 +472,8 @@ async function createDapp(sk, n) {
   // sk.copy(G["ref"], 0, 0, DIM, DIM, DIM - DIM / 5, 0, DIM / 5, DIM / 5,);
   // sk.blendMode(sk.SCREEN);
   sk.blendMode(sk.MULTIPLY);
-  // sk.blendMode(sk.DARKEN);
   // console.log("About to tint")
   // sk.tint(255, 127)
-  console.log("Have tinted")
   // const copyStartX = Math.floor(Math.random() * (bgImg.width - W));
   // const copyStartY = Math.floor(Math.random() * (bgImg.height - H));
   sk.image(bgImg, 0, 0)
