@@ -9,10 +9,12 @@ var sk;
 var r; //assign random hash accees
 var DIM; var W; var H;
 var random = null;
-var few_shapes = []
+// var few_shapes = []
 var backgrounds = []
-var many_shapes = []
-var cubes = []
+var addonShapes = []
+// var many_shapes = []
+// var cubes = []
+var shapes
 var mainColor
 var blackColor
 var l, t, r, b, fw, fh
@@ -88,8 +90,8 @@ export async function draw(sketch, assets, raw_assets) {
   let startmilli = Date.now();
   random = Math.random()
   //Fixed Canvas Size
-  W = 2000;
-  H = 3000;
+  W = 1600;
+  H = 2400;
   globalPadding = .05
   // DIM = Math.min(WIDTH, HEIGHT);
   l = W * globalPadding;
@@ -98,6 +100,12 @@ export async function draw(sketch, assets, raw_assets) {
   b = W * (1 - globalPadding);
   fw = r - l;
   fh = b - t;
+  addonShapes = [
+    "floating_bottom_right",
+    "floating_center",
+    "floating_top_right",
+    "floating_top_left"
+  ]
 
   sk = sketch;
   sk.blendMode(sk.BLEND);
@@ -109,21 +117,17 @@ export async function draw(sketch, assets, raw_assets) {
     console.log("W, H: ", W, H);
 
     //organize the shapes into categories
-    few_shapes = []
-    backgrounds = []
-    many_shapes = []
-    for (let ra of raw_assets) {
-      if (ra["name"].includes("CUBE")) {
-        cubes.push(ra)
-      } else if (ra["name"].includes("FEW")) {
-        few_shapes.push(ra)
-      } else if (ra["name"].includes("MANY")) {
-        many_shapes.push(ra)
-      } else if (ra["name"].includes("Background")) {
-        backgrounds.push(ra)
-      } else {
-        console.log("Unknown Category: " + ra["name"])
-      }
+    // few_shapes = []
+    // backgrounds = []
+    // many_shapes = []
+    // for (let ra of raw_assets) {
+    //   console.log("raw asset folder: " + ra["name"])
+    // }
+    // shapes = raw_assets
+    shapes = []
+    for (let shape of raw_assets) {
+      shapes[shape["name"]] = shape["files"]
+      console.log("raw shape folder: " + shape["name"])
     }
 
     /* Chop up the background image into sections */
@@ -134,9 +138,10 @@ export async function draw(sketch, assets, raw_assets) {
     //   let image = await sketch.loadImage(imgPath)
     //   saveRandomSectionsOfImage(sk, image, 50, H, W, "shrunk_backgrounds/" + backgrounds[0]["files"][i])
     // }
-    for (let i = 1; i <= 13; i++) {
+    for (let i = 1; i <= 10; i++) {
       console.log("creating image ##############: " + i)
-      await createDapp(sk, i)
+      // await createDapp(sk, i)
+      await createScribble(sk, i)
 
     }
     //Choose a Background and display a section of it. 
@@ -182,6 +187,65 @@ function randomPointInRectangle(x1, x2, y1, y2) {
 
 function randomPointInFrame() {
   return randomPointInRectangle(W * globalPadding, W * (1 - globalPadding), W * globalPadding, W * (1 - globalPadding))
+}
+
+async function getRandomAssetFromFolder(assetDir) {
+  console.log("getting random asset from folder: " + assetDir)
+  // console.log("assetFolder: " + shapes[assetDir])
+  // let dirIdx = ibtw(0, many_shapes.length)
+  // let file = rFrom(many_shapes[dirIdx]["files"])
+  let currImgPath = "assets/" + assetDir + "/" + rFrom(shapes[assetDir])
+  console.log("currImgPath: " + currImgPath)
+  let currImg = await sk.loadImage(currImgPath);
+  return currImg
+  // currImages.push(currImg)
+}
+
+async function createScribble(sk, n) {
+  sk.createCanvas(W, H);
+  sk.clear();
+  sk.strokeCap(sk.SQUARE)
+  sk.background(165, 165, 165)
+  console.log("Bakground shape length" + shapes["Background"].length)
+  let bg = shapes["Background"][Math.floor(Math.random() * shapes["Background"].length)]
+  let bg_path = "assets/" + "Background" + "/" + bg
+  // console.log("bg: " + bg_path)
+
+  let bgImg = await sk.loadImage(bg_path);
+  sk.image(bgImg, 0, 0)
+
+  let mainImg
+  for (let sh in shapes) {
+    console.log("shape dir: " + sh)
+  }
+  if (p(.5)) { //main left
+    mainImg = await getRandomAssetFromFolder("main_left")
+
+  } else { //main right
+    mainImg = await getRandomAssetFromFolder("main_right")
+
+  }
+  console.log("mainImg: " + (typeof mainImg))
+  console.log("mainImg: " + mainImg)
+  sk.image(mainImg, W * .05 + 3, W * .05 + 3, W * .9 - 3, W * .9 - 3)
+
+  for (let s of addonShapes) {
+    let addonImg = await getRandomAssetFromFolder(s)
+    sk.image(addonImg, 0, 0, addonImg.width, addonImg.height)
+  }
+
+  let logoImg = await getRandomAssetFromFolder("logo")
+  let imgRatio = logoImg.width / logoImg.height
+  sk.image(logoImg, W * .07, W * .75, W * .2 * imgRatio, W * .2)
+  // sk.blendMode(sk.MULTIPLY);
+  // sk.image(bgImg, 0, 0)
+  // sk.copy(bgImg, copyStartX, copyStartY, W, H, 0, 0, W, H);
+  // sk.blendMode(sk.BLEND);
+  // sk.noStroke()
+  // sk.fill(255, 255, 255, 20)
+  // sk.rect(0, 0, W, H)
+  //Saves the image for test review: Remove from production
+  sk.saveCanvas(sk, "dappCon" + n, 'png');
 }
 
 async function createDapp(sk, n) {
@@ -240,80 +304,6 @@ async function createDapp(sk, n) {
     shapeColor = blackColor
     // line()
   }
-  //rays, ignore for now
-  // else { //rays
-  //   sk.fill(mainColor)
-  //   linesColor = blackColor
-  //   shapeColor = blackColor
-  //   sk.noStroke()
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * globalPadding, W * (1 - globalPadding))
-  //   sk.vertex(W * (globalPadding + .2), W * (1 - globalPadding))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (globalPadding + .4), W * (1 - globalPadding))
-  //   sk.vertex(W * (globalPadding + .6), W * (1 - globalPadding))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (globalPadding + .8), W * (1 - globalPadding))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .10))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .20))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .35))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .45))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .60))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .65))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .75))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-  //   sk.beginShape()
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .80))
-  //   sk.vertex(W * (1 - globalPadding), W * (1 - globalPadding - .85))
-  //   sk.vertex(W * globalPadding, W * globalPadding)
-  //   sk.endShape()
-  // }
-
-  //Draw random lines
-  // for (let i = 0; i < 3; i++) {
-  //   sk.line(Math.random() * W, Math.random() * W, Math.random() * W, Math.random() * W)
-  // }
-
-  //get 3 random numbers
-  // let n = 2
-  // let folders_to_use = []
-  // while (folders_to_use.length < n) {
-  //   let r = Math.floor(Math.random() * raw_assets.length)
-  //   if (!folders_to_use.includes(r)) {
-  //     folders_to_use.push(r)
-  //   }
-  //   if (raw_assets.length < n) {
-  //     console.log("LOOKING FOR MORE FOLDER THAN EXISTS")
-  //     break
-  //   }
-  // }
 
   //determine which shapes to use
   let currImages = []
@@ -348,106 +338,8 @@ async function createDapp(sk, n) {
   console.log("currImgPath: " + currImgPath)
   let currImg = await sk.loadImage(currImgPath);
   currImages.push(currImg)
-  // if (p(1.75)) {
-
-  //   squaresToDraw.push(...randomPointInFrame(), Math.random() * W * .5 + W * .1)
-  // }
 
 
-  // console.log("currImages: " + currImages.length)
-  //Draw the images
-  // sk.strokeWeight(H / 1000)
-  sk.noStroke()
-  if (p(1.75)) {
-    // console.log("drawing squares")
-    let hasTwin = p(.00025)
-    let identicalTwin = p(.25)
-    let angle = Math.random() * 2 * sk.PI
-    let side = W * .05 + Math.random() * W * (Math.random() < .25 ? .4 : .3)
-    let numSides = 4
-    sk.fill(shapeColor)
-    let minDistFromFrame = Math.sqrt(2 * (side / 2) * (side / 2))
-    if (!hasTwin) {
-      let shapeX = l + minDistFromFrame + Math.random() * (fw - minDistFromFrame * 2)
-      let shapeY = t + minDistFromFrame + Math.random() * (fh - minDistFromFrame * 2)
-      randomShape(sk, shapeX, shapeY, side, angle, numSides)
-    }
-    // else {
-    //   if (p(.5)) { //hoprizontal shape
-
-    //   } else { //vertical shape
-    //     let shapeX1 = l + minDistFromFrame + Math.random() * (fw - minDistFromFrame)
-
-    // }
-    // sk.fill(mainColor)
-    // if (p(.25)) { //add twin
-    //   sk.fill(shapeColor)
-    //   if (p(.25)) { //identical twin
-    //     randomShape(sk, Math.random() * W, Math.random() * W, side, angle, numSides)
-    //   } else {
-    //     let twinAngle = Math.random() * 2 * sk.PI
-    //     let twinSide = W * .05 + Math.random() * W * (Math.random() < .25 ? .6 : .4)
-    //     let twinNumSides = 4
-    //     randomShape(sk, Math.random() * W, Math.random() * W, twinSide, twinAngle, twinNumSides)
-    //   }
-    // }
-
-  }
-
-  //drawlines
-  if (p(5.5)) {
-    console.log("lines")
-    sk.stroke(linesColor)
-    sk.strokeWeight(H / 200)
-    if (p(.5)) {
-      console.log("image lines")
-      let linesFromImage = rFrom(currImages)
-      let shapeAngle = await findAngleOfShape(sk, linesFromImage)
-      let d = Math.random() * W * .5 + W * .3
-      sk.line(
-        shapeAngle[1][0][0] - H * .1,
-        shapeAngle[1][0][1],
-        shapeAngle[1][0][0] - H * .1 + d * Math.cos(shapeAngle[0]),
-        shapeAngle[1][0][1] + d * Math.sin(shapeAngle[0])
-      )
-      if (p(.4)) {
-        let perp = shapeAngle[0] + Math.PI / 2
-        let px = Math.random() * fw + l
-        let py = Math.random() * fh + t
-        sk.strokeWeight(H / 200)
-        sk.line(px, py, px + d * Math.cos(perp), py + d * Math.sin(perp))
-      }
-    } else {
-      console.log("set lines")
-      let lineVert = p(.5)
-      let offset = W * rbtw(globalPadding, 1 - globalPadding * 3)
-      let hpct = rbtw(.5, 1 - globalPadding)
-      let lineHeight = W * hpct
-      let hstart = W * rbtw(globalPadding, 1 - hpct - globalPadding)
-      if (lineVert) {
-        sk.line(hstart, offset, hstart + lineHeight, offset)
-        if (p(0.6)) {
-          offset += W * .05
-          sk.line(hstart, offset, hstart + lineHeight, offset)
-          if (p(.6)) {
-            offset += W * .05
-            sk.line(hstart, offset, hstart + lineHeight, offset)
-          }
-        }
-      } else {
-        sk.line(offset, hstart, offset, hstart + lineHeight)
-        if (p(5.5)) {
-          offset += W * .05
-          sk.line(offset, hstart, offset, hstart + lineHeight)
-          if (p(5.5)) {
-            offset += W * .05
-            sk.line(offset, hstart, offset, hstart + lineHeight)
-          }
-        }
-      }
-    }
-
-  }
 
   //draw the shapes
   for (let img of currImages) {
