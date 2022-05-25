@@ -1,5 +1,6 @@
 import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
 import { diceFrame, init as eInit } from "./effects.js";
+import { sliceUp, dither, drip, drawShadow, addFlow, glitchifyImg, pixelDrag } from "./frederative-effects.js";
 
 var G;
 var sk;
@@ -23,7 +24,8 @@ export function getAssets() {
   }
   return {
     // background: 'awaken_raw_' + id + '.png',
-    background: id + '.jpg',
+    // background: id + '.jpg',
+    background: 'nukehype/4v2.png',
   };
 }
 
@@ -40,6 +42,10 @@ function rbtw(a, b, random) {
   return a + (b - a) * random();
 }
 
+// select random item from array
+function randArray(array) {
+  return array[Math.floor(Math.random() * 10000 % array.length)];
+}
 
 function getMask(DIM) {
   var mask = sk.createGraphics(DIM, DIM);
@@ -66,11 +72,15 @@ export async function draw(sketch, assets, raw_asset_folders) {
   let startmilli = Date.now();
 
   //Fixed Canvas Size, change as needed
-  WIDTH = 640;
-  HEIGHT = 640;
+  WIDTH = 1000;
+  HEIGHT = 1000;
+
 
   //Populate the features object like so, it is automatically exported. 
-  features['Trait Name'] = "Trait Value";
+  features['Flow'] = randArray([true, false]);
+  features['Slice Up'] = randArray([true, false]);
+  features['Flow'] = randArray([true, false]);
+  features['Glitchify'] = randArray([true, false]);
   DIM = Math.min(WIDTH, HEIGHT);
 
   sk = sketch;
@@ -88,6 +98,11 @@ export async function draw(sketch, assets, raw_asset_folders) {
      If the raw image is too large, a random section is chosen to match our fixed canvas size.
     */
     let referenceGraphic = sk.createGraphics(DIM, DIM);
+
+    // frederative - needs to be called prior to image copy
+    sk.noiseDetail(8, 0.75);
+    sk.pixelDensity(1);
+
     const copyStartX = Math.floor(random() * (assets[img_name].width - WIDTH));
     const copyStartY = Math.floor(random() * (assets[img_name].height - HEIGHT));
     referenceGraphic.copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
@@ -96,8 +111,25 @@ export async function draw(sketch, assets, raw_asset_folders) {
     sk.image(referenceGraphic, 0, 0);
 
     /***********IMAGE MANIPULATION GOES HERE**********/
-    let rainWeight = .5;
-    diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
+    // let rainWeight = .5;
+    // diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
+    console.log(features);
+
+    if (features['Slice Up'] === true)
+      sk = sliceUp(sk);
+    if (features['Flow'] === true)
+      sk = addFlow(sk);
+    if (features['Glitchify'] === true)
+      sk = glitchifyImg(sk);
+    if (features['Drip'] === true)
+      sk = drip(sk);
+    // if (features['Dither'] === true)
+
+    sk.noFill();
+    let o = sk.width * 0.05;
+    sk.stroke(sk.color(0, 220, 0));
+    sk.rect(o, o, sk.width - 2 * o, sk.height - 2 * o);
+    sk = dither(sk);
     /***********IMAGE MANIPULATION ENDS HERE**********/
 
 

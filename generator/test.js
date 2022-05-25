@@ -16,13 +16,19 @@ async function run() {
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
 
+  let assetPath = "./assets/nukehype/";
+  let files = [];
 
+  console.log("DEBUG")
   let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory() && !f.startsWith('.'));
+  console.log(assetFolders)
   let raw_asset_folders = []
   for (let af of assetFolders) {
     let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png'));
     raw_asset_folders.push({ "name": af, "files": files });
   }
+  console.log(files);
+  console.log("/DEBUG")
 
   const final = new Promise(async (resolve, reject) => {
     for (let i = 0; i < sketchCount; i++) {
@@ -36,6 +42,7 @@ async function run() {
             // Load assets...
             const assets = {};
             const preload = generator.getAssets()
+            console.log(preload);
             console.log("Loading assets: ", preload);
             if (preload) {
               for (let index in preload) {
