@@ -16,7 +16,7 @@ async function run() {
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
 
-  let assetPath = "./assets/nukehype/";
+  let assetPath = "./assets/nukehype";
   let files = [];
 
   console.log("DEBUG")
