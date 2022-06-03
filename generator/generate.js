@@ -11,7 +11,7 @@ var DIM; var W; var H;
 var random = null;
 // var few_shapes = []
 var backgrounds = []
-var addonShapes = []
+var addonShapeBaseNames = []
 // var many_shapes = []
 // var cubes = []
 var shapes
@@ -91,7 +91,7 @@ export async function draw(sketch, assets, raw_assets) {
   random = Math.random()
   //Fixed Canvas Size
   W = 1600;
-  H = 2400;
+  H = 1600;
   globalPadding = .05
   // DIM = Math.min(WIDTH, HEIGHT);
   l = W * globalPadding;
@@ -100,7 +100,7 @@ export async function draw(sketch, assets, raw_assets) {
   b = W * (1 - globalPadding);
   fw = r - l;
   fh = b - t;
-  addonShapes = [
+  addonShapeBaseNames = [
     "floating_bottom_right",
     "floating_center",
     "floating_top_right",
@@ -209,6 +209,17 @@ async function createScribble(sk, n) {
   console.log("Bakground shape length" + shapes["Background"].length)
   let bg = shapes["Background"][Math.floor(Math.random() * shapes["Background"].length)]
   let bg_path = "assets/" + "Background" + "/" + bg
+  let bgType = ""
+  if (bg == "red.png") {
+    bgType = "redBG_"
+  } else if (bg == "black.png") {
+    bgType = "blackBG_"
+  } else if (bg == "white.png") {
+    bgType = "whiteBG_"
+  } else {
+    console.log("unhandled background file: " + bg)
+    exit()
+  }
   // console.log("bg: " + bg_path)
 
   let bgImg = await sk.loadImage(bg_path);
@@ -219,16 +230,20 @@ async function createScribble(sk, n) {
     console.log("shape dir: " + sh)
   }
   if (p(.5)) { //main left
-    mainImg = await getRandomAssetFromFolder("main_left")
+    mainImg = await getRandomAssetFromFolder(bgType + "main_left")
 
   } else { //main right
-    mainImg = await getRandomAssetFromFolder("main_right")
+    mainImg = await getRandomAssetFromFolder(bgType + "main_right")
 
   }
   console.log("mainImg: " + (typeof mainImg))
   console.log("mainImg: " + mainImg)
   sk.image(mainImg, W * .05 + 3, W * .05 + 3, W * .9 - 3, W * .9 - 3)
-
+  let addonShapes = []
+  addonShapeBaseNames.forEach((addon) => {
+    addonShapes.push(bgType + addon)
+  })
+  console.log("altered addons: " + addonShapes)
   for (let s of addonShapes) {
     let addonImg = await getRandomAssetFromFolder(s)
     sk.image(addonImg, 0, 0, addonImg.width, addonImg.height)
