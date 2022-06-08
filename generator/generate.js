@@ -138,7 +138,7 @@ export async function draw(sketch, assets, raw_assets) {
     //   let image = await sketch.loadImage(imgPath)
     //   saveRandomSectionsOfImage(sk, image, 50, H, W, "shrunk_backgrounds/" + backgrounds[0]["files"][i])
     // }
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 50; i++) {
       console.log("creating image ##############: " + i)
       // await createDapp(sk, i)
       await createScribble(sk, i)
