@@ -1,5 +1,6 @@
 import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
 import { diceFrame, init as eInit } from "./effects.js";
+import { randArray, centerDrip, smear, sliceUp, dither, drip, drawShadow, addFlow, glitchifyImg, pixelDrag } from "./frederative-effects.js";
 
 var G;
 var sk;
@@ -21,9 +22,19 @@ export function getAssets() {
   if (id < 10) {
     id = "0" + id;
   }
+  let files = [];
+  let f = 'nukehype2/';
+  for (let i = 1; i <= 12; i++)
+    files.push(`${f}${i}.png`)
+
+  let retval = randArray(files);
+  console.log(`image: ${retval}`)
+
   return {
     // background: 'awaken_raw_' + id + '.png',
-    background: id + '.jpg',
+    // background: id + '.jpg',
+    // background: 'nukehype/4v2.png',
+    background: retval,
   };
 }
 
@@ -66,11 +77,60 @@ export async function draw(sketch, assets, raw_asset_folders) {
   let startmilli = Date.now();
 
   //Fixed Canvas Size, change as needed
-  WIDTH = 640;
-  HEIGHT = 640;
+  WIDTH = 2500;
+  HEIGHT = 2500;
 
   //Populate the features object like so, it is automatically exported. 
-  features['Trait Name'] = "Trait Value";
+  features['Slice Up'] = randArray([true, false]);
+  features['Slice Up Detail'] = randArray(['small', 'medium', 'large']);
+
+  features['Flow'] = randArray([true, false]);
+  features['Flow Type'] = randArray(['Clean', 'Edgy', 'Random']);
+  features['Flow Center'] = randArray([true, false]);
+  features['Flow Multiplier'] = sketch.random(2, 50) | 0;
+
+  features['Glitchify'] = randArray([true, false]);
+  features['Border'] = randArray([true, false]);
+  features['Accent Color'] = randArray([false, '#006600', '#000066']);
+
+  features['Drip'] = randArray([true, false]);
+  features['Drip Direction'] = randArray(['horizontal', 'vertical', 'diagonal']);
+  features['Drip Crazy'] = randArray([true, false]);
+
+  features['Smear'] = randArray([true, false]);
+  features['Pixel Drag'] = randArray([true, false]);
+  features['Number of Pixels'] = sketch.random(WIDTH / 8, WIDTH / 4) | 0;
+  features['Pixel Drag Direction'] = randArray(["horizontal", "vertical", "diagonal"]);
+
+  // fix up special features
+  if (features['Drip'] === false && features['Slice Up'] === false && features['Flow'] === false && features['Smear'] === false && features['Pixel Drag'] === false) {
+    let _r = sketch.random();
+    if (_r > 0.80)
+      features['Slice Up'] = true;
+    else if (_r > 0.6)
+      features['Drip'] = true;
+    else if (_r > 0.40)
+      features['Flow'] = true;
+    else if (_r > 0.20)
+      features['Smear'] = true;
+    else
+      features['Pixel Drag'] = true;
+  }
+  if (features['Slice Up'] === false) features['Slice Up Detail'] = 'N/A';
+  if (features['Drip'] === false) {
+    features['Drip Direction'] = 'N/A';
+    features['Drip Crazy'] = 'N/A';
+  }
+  if (features['Flow'] === false) {
+    features['Flow Type'] = 'N/A';
+    features['Flow Center'] = 'N/A';
+    features['Flow Multiplier'] = 'N/A';
+  }
+  if (features['Pixel Drag'] === false) {
+    features['Number of Pixels'] = 'N/A';
+    features['Pixel Drag Direction'] = 'N/A';
+  }
+
   DIM = Math.min(WIDTH, HEIGHT);
 
   sk = sketch;
@@ -88,6 +148,11 @@ export async function draw(sketch, assets, raw_asset_folders) {
      If the raw image is too large, a random section is chosen to match our fixed canvas size.
     */
     let referenceGraphic = sk.createGraphics(DIM, DIM);
+
+    // frederative - needs to be called prior to image copy
+    sk.noiseDetail(8, 0.75);
+    sk.pixelDensity(1);
+
     const copyStartX = Math.floor(random() * (assets[img_name].width - WIDTH));
     const copyStartY = Math.floor(random() * (assets[img_name].height - HEIGHT));
     referenceGraphic.copy(assets[img_name], copyStartX, copyStartY, DIM, DIM, 0, 0, DIM, DIM);
@@ -96,8 +161,46 @@ export async function draw(sketch, assets, raw_asset_folders) {
     sk.image(referenceGraphic, 0, 0);
 
     /***********IMAGE MANIPULATION GOES HERE**********/
-    let rainWeight = .5;
-    diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
+    // let rainWeight = .5;
+    // diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
+    console.log(features);
+
+    // testing
+    // sk = sliceUp(sk, features);
+    // sk = drip(sk, features);
+    // sk = addFlow(sk, features);
+    sk = centerDrip(sk, features); // broken // too slow
+    // still has some issues
+    // sk = smear(sk, features);
+    // sk = pixelDrag(sk, features);
+
+
+    // if (features['Slice Up'] === true)
+    //   sk = sliceUp(sk, features);
+    // else if (features['Flow'] === true)
+    //   sk = addFlow(sk, features);
+    // else if (features['Drip'] === true)
+    //   sk = drip(sk, features);
+    // else if (features['Smear'] === true)
+    //   sk = smear(sk, features);
+    // else { // catch in case if all are false - shouldn't happen but don't just return raw image
+    //   console.log("Error");
+    // }
+
+    // can be called regardless of other technique
+    if (features['Glitchify'] === true)
+      sk = glitchifyImg(sk);
+
+    // border entity
+    if (features['Border'] === true) {
+      sk.noFill();
+      let o = sk.width * 0.05;
+      sk.stroke(sk.color(0, 220, 0));
+      sk.rect(o, o, sk.width - 2 * o, sk.height - 2 * o);
+    }
+
+    // dither regardless
+    sk = dither(sk);
     /***********IMAGE MANIPULATION ENDS HERE**********/
 
 
