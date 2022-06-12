@@ -1,12 +1,12 @@
-import { lightenHSL, lighten, wAlpha, getAngleBetweenPoints, getIntersectionOfTwoLines, getTrianglePoints } from "./util.js"
-
+import { lightenHSL, lighten, wAlpha, getAngleBetweenPoints, getIntersectionOfTwoLines, getTrianglePoints } from "../util.js"
+import { addAuthorRoyalties } from "../royalties.js"
+const AUTHOR_TEZOS_ADDRESS = "tz1heFSv4WcJ6AQR6xkPsp7jMsvCeEm11yrs"
 /*
  Override Math.random() with the seeded random value
 */
 let random = null;
 export function init(rnd) {
   Math.random = rnd;
-  random = rnd;
 }
 /*
   diceFrame creates a copy of the sketch sent to it, and dices the frame 
@@ -14,50 +14,34 @@ export function init(rnd) {
 
   Parameters:
   n -> How many vertical slices to create
-  verticalOffset -> each vertical slice is shifted up or down by this amount
-  sk -> The sketch to be diced
-  g -> The graphics object to draw the diced sketch to
+  verticalOffsetPct -> percentage of the height of the sketch to move the slice
+  sk -> The sketch is the target of the dice
+  g -> The graphics object to dice and overlay on the sketch
   options -> An object containing options for the diceFrame function
 */
-export function diceFrame(n, verticalOffset, sk, g, options) {
-  console.log("dice frame space:", options.space)
-  let DIM = sk.width;
-  // let g = sk.createGraphics(DIM, DIM);
-  sk.loadPixels();
-  // g.updatePixels(pixels);
-  g.copy(sk, 0, 0, DIM, DIM, 0, 0, DIM, DIM)
-
-  sk.background(0);
-
-  // image(g,0,0)
-  //copy ref.
-  let minXOffset = options.minXOffset ? sk.max(options.minXOffset, 1) : 1;
-
+export function sliceFrame(n, verticalOffsetPct, sketch, graphic, options, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties)
+  let DIM = sketch.width;
+  let verticalOffset = sketch.height * verticalOffsetPct
+  let minSliceWidth = options.minSliceWidth ? sketch.max(options.minSliceWidth, 1) : 1;
   let sliceWidth = DIM / n;
-  // let slideDir = 0;
+  let currSliceWidth = sliceWidth
   let xOffset = 0;
   let loopCounter = 0
+
+  //Traverse from left to right, taking vertical slices and shifting them up or down
   while (xOffset < DIM) {
-    if (loopCounter > (DIM / (minXOffset + 5))) break;
-    let yOffset = (Math.random() * verticalOffset - verticalOffset / 2) * (1 - Math.abs(xOffset - DIM / 2) / DIM / 2) * ((1 - Math.abs(xOffset - DIM / 2) / DIM / 2));
-    // console.log("splice loop: " + loopCounter + " xOffset: " + xOffset + " yOffset: " + yOffset)
+    if (loopCounter > (DIM / (minSliceWidth + 5))) break;
+    let yOffset = (Math.random() * verticalOffset - verticalOffset / 2)// * (1 - Math.abs(xOffset - DIM / 2) / DIM / 2) * ((1 - Math.abs(xOffset - DIM / 2) / DIM / 2));
     let rplace = xOffset;
     if (options.randomReplace) {
       rplace = Math.random() * DIM
     }
-    sk.image(g, xOffset, yOffset, sliceWidth, DIM, rplace, 0, sliceWidth, DIM)
-    if (options.randomX) {
-
-      xOffset += minXOffset + Math.random() * (sliceWidth - minXOffset);
-    } else {
-      xOffset += sliceWidth;
+    if (options.randomSliceWidth) {
+      currSliceWidth = Math.floor(minSliceWidth + Math.random() * (sliceWidth - minSliceWidth));
     }
-    if (options.space) {
-      xOffset += Math.random() * 10;
-    }
-    //slice from ref
-    //copy to sketch
-    // slideDir = slideDir == 0 ? 1 : 0;
+    sketch.image(graphic, xOffset, yOffset, currSliceWidth, DIM, rplace, 0, currSliceWidth, DIM)
+    xOffset += currSliceWidth;
   }
 
 }

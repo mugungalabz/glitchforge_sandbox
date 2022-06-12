@@ -353,3 +353,22 @@ export function colorIsRed(color) {
   if (color[0] + color[1] + color[2] >= 600) return false;
   return true;
 }
+
+/*
+  Returns random item from a list
+*/
+export function randomListItem(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+/*
+  Gets a random image from an asset directory
+*/
+
+export async function getRandomImage(assets, asset_Dir, sketch) {
+
+  let currImgPath = "assets/" + asset_Dir + "/" + randomListItem(assets[asset_Dir])
+  console.log("currImgPath: " + currImgPath)
+  let currImg = await sketch.loadImage(currImgPath);
+  return currImg
+}
