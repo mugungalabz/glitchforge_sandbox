@@ -1,5 +1,5 @@
 assets/*
-assets/
+# assets/
 generator/asdf.js
 generator/*.png
 node_modules/*
