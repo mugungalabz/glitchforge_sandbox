@@ -1,4 +1,5 @@
 import { init } from "./effects.js";
+import { greenify } from "./util.js";
 
 // util functions
 // select random item from array
@@ -334,25 +335,39 @@ export function centerDrip(g, features) {
   let circ_r = g.width / g.random(1.5, 3);
   let _scale = getScale(g);
 
-  g.loadPixels();
+  // let pixels = g.get();
+  // console.log(pixels);
+
   g.push();
+  g.loadPixels();
   g.translate(g.width/2, g.height/2);
   for (let i = 0; i < 1000; i++) {
-    g.strokeWeight((g.random(0.5, 10.0)|0) * _scale);
+    g.strokeWeight(5*_scale);//(g.random(0.5, 10.0)|0) * _scale);
     let r = g.random(0,circ_r)|0;
     let theta = g.random(0.0, g.TWO_PI);
 
     let x = r * Math.cos(theta);
     let y = r * Math.sin(theta);
 
-    let col = g.color(g.get(x, y));
+    // let col = g.color(g.get(x, y));
+    // x += g.width/2;
+    // y += g.height/2;
+    let col = g.get(x,y);
+    // if (col[0] > 10 && col[1] > 10 && col > 10) {
+      let y2 = g.random(y+1, g.height-y)|0;
+      for (let _y = y; _y < y2; _y++) {
 
-    let y2 = g.random(y+1, g.height-y)|0;
-    for (let _y = y; _y < y2; _y++) {
-      col.setAlpha(g.map(_y, y, y2, 180, 0));
-      g.stroke(col);
-      g.point(x, _y);
-    }
+        // if (_y < y2*0.8)
+        //   col.setAlpha(180);
+        // else
+        //   col.setAlpha(g.map(_y, y, y2, 180, 0));
+        console.log(g.width, g.height, x, y, col, greenify(col, 255))
+
+        col = greenify(g.color(col), 255);
+        g.stroke(g.color(col));
+        g.point(x, _y);
+      }
+    // }
   }
   g.pop();
 
