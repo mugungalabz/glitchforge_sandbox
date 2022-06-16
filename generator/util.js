@@ -372,3 +372,9 @@ export async function getRandomImage(assets, asset_Dir, sketch) {
   let currImg = await sketch.loadImage(currImgPath);
   return currImg
 }
+export function getRandomImageName(assets, asset_Dir) {
+
+  let currImgPath = "assets/" + asset_Dir + "/" + randomListItem(assets[asset_Dir])
+  console.log("currImgPath: " + currImgPath)
+  return currImgPath
+}

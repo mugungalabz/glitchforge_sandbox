@@ -15,15 +15,14 @@ async function run() {
 
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
   const sketchCount = 1;
-
   var assetPath = 'assets/'
   var files = fs.readdirSync(assetPath)
   let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory() && !f.startsWith('.'));
-  let assets = {}
+  let raw_asset_folders = {}
   for (let af of assetFolders) {
     console.log("Indexing Asset Folder: " + af)
     let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
-    assets[af] = files
+    raw_asset_folders[af] = files
   }
 
 
@@ -37,7 +36,22 @@ async function run() {
             generator.init(random, txn_hash);
 
             // Load assets...
+            // Load assets...
+            const assets = {};
+            const preload = generator.getAssets(raw_asset_folders)
 
+            if (preload) {
+              for (let index in preload) {
+                console.log("preload[index]" + preload[index])
+                let fileLabel = preload[index][0]
+                let filename = preload[index][1];
+                console.log("Preloading: ", filename, " Index: ", index);
+                if (!filename.includes('..')) {
+                  console.log("aCurrent directory:", process.cwd())
+                  assets[fileLabel] = await sketch.loadImage(filename);
+                }
+              }
+            }
             console.log("Calling setup..");
             resolve(await generator.draw(sketch, assets));
 

@@ -1,4 +1,4 @@
-import { getRandomImage } from "./util.js";
+import { getRandomImageName } from "./util.js";
 import { calculateRoyalties } from "./royalties.js";
 import { sliceFrame, init as eInit } from "./effects/tartaria.js";
 
@@ -14,6 +14,13 @@ export function init(rnd, txn_hash) {
   eInit(rnd);
 }
 
+// Guaranteed to be called second (after init), to load required assets.
+// Returns a map of assets, keyname --> filename
+export function getAssets(raw_assets) {
+  return [
+    ["main_image", getRandomImageName(raw_assets, 'samples')]
+  ]
+}
 // Guaranteed to be called after setup(), can build features during setup
 // Add your rarity traits and attributes to the features object
 const features = {};
@@ -74,7 +81,7 @@ export async function draw(sketch, assets) {
      If the raw image is too large, a random section is chosen to match our fixed canvas size.
     */
     let referenceGraphic = sketch.createGraphics(WIDTH, HEIGHT);
-    let image = await getRandomImage(assets, 'samples', sketch)
+    let image = assets["main_image"]
     const copyStartX = Math.floor(random() * (image.width - WIDTH));
     const copyStartY = Math.floor(random() * (image.height - HEIGHT));
     referenceGraphic.copy(image, copyStartX, copyStartY, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT);
