@@ -11,12 +11,14 @@ async function run() {
   const sketchCount = 1;
   var assetPath = 'assets/'
   var files = fs.readdirSync(assetPath)
-  // console.log("files: " + files)
+  console.log("files: " + files)
   let assetFolders = files.filter(f => fs.lstatSync(assetPath + f).isDirectory() && !f.startsWith('.'));
-  let raw_assets = []
+  let raw_assets = {}
   for (let af of assetFolders) {
+    console.log("asset folder processing: " + af)
     let files = fs.readdirSync(assetPath + af).filter(f => f.endsWith('.png'));
-    raw_assets.push({ "name": af, "files": files });
+    // raw_assets.push({ "name": af, "files": files });
+    raw_assets[af] = files //use a dictionary instead
   }
   console.log("assetFolders: " + assetFolders)
   const final = new Promise(async (resolve, reject) => {
@@ -28,23 +30,8 @@ async function run() {
 
             generator.init(random, txn_hash);
 
-            // Load assets...
-            const assets = {};
-            const preload = generator.getAssets()
-            console.log("Loading assets: ", preload);
-            // if (preload) {
-            //   for (let index in preload) {
-            //     let filename = preload[index];
-            //     console.log("Preloading: ", filename, " Index: ", index);
-            //     if (!filename.includes('..')) {
-            //       console.log("aCurrent directory:", process.cwd())
-            //       assets[index] = await sketch.loadImage('./assets/' + filename);
-            //     }
-            //   }
-            // }
-
             console.log("Calling setup..");
-            resolve(await generator.draw(sketch, assets, raw_assets));
+            resolve(await generator.draw(sketch, raw_assets));
 
             const features = generator.getFeatures();
             const attributes = [];
