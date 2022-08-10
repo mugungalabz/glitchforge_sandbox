@@ -18,6 +18,8 @@ var blackColor
 var l, t, r, b, fw, fh
 var orthShape
 
+//TESTING CHANGES
+
 // Guaranteed to be called first.
 export function init(rnd, txn_hash) {
   Math.random = rnd;
