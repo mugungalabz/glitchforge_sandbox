@@ -74,8 +74,8 @@ export async function draw(sketch, raw_assets) {
   let startmilli = Date.now();
   random = Math.random()
   //Fixed Canvas Size
-  W = 1000;
-  H = 1000;
+  W = 256;
+  H = 240;
   globalPadding = .05
   // DIM = Math.min(WIDTH, HEIGHT);
   l = W * globalPadding;
@@ -121,6 +121,10 @@ async function layerImages(sk, n) {
 
   // sk.background(165, 165, 165)
   await applyRandomImage(sk, "bg")
+  await applyRandomImage(sk,"bg_overlay")
+  await applyRandomImage(sk,"thick")
+  await applyRandomImage(sk,"thin")
+  await applyRandomImage(sk,"details")
   sk.saveCanvas(sk, "lostlvels" + n, 'png');
 
 }
