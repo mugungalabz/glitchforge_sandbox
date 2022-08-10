@@ -12,6 +12,7 @@ var random = null;
 // var few_shapes = []
 var backgrounds = []
 var addonShapeBaseNames = []
+var centerShapeDir
 // var many_shapes = []
 // var cubes = []
 var shapes
@@ -102,10 +103,10 @@ export async function draw(sketch, assets, raw_assets) {
   fh = b - t;
   addonShapeBaseNames = [
     "floating_bottom_right",
-    "floating_center",
     "floating_top_right",
     "floating_top_left"
   ]
+  centerShapeDir = "floating_center"
 
   sk = sketch;
   sk.blendMode(sk.BLEND);
@@ -127,7 +128,7 @@ export async function draw(sketch, assets, raw_assets) {
     shapes = []
     for (let shape of raw_assets) {
       shapes[shape["name"]] = shape["files"]
-      console.log("raw shape folder: " + shape["name"])
+      // console.log("raw shape folder: " + shape["name"])
     }
 
     /* Chop up the background image into sections */
@@ -138,7 +139,7 @@ export async function draw(sketch, assets, raw_assets) {
     //   let image = await sketch.loadImage(imgPath)
     //   saveRandomSectionsOfImage(sk, image, 50, H, W, "shrunk_backgrounds/" + backgrounds[0]["files"][i])
     // }
-    for (let i = 1; i <= 50; i++) {
+    for (let i = 1; i <= 200; i++) {
       console.log("creating image ##############: " + i)
       // await createDapp(sk, i)
       await createScribble(sk, i)
@@ -188,15 +189,30 @@ function randomPointInRectangle(x1, x2, y1, y2) {
 function randomPointInFrame() {
   return randomPointInRectangle(W * globalPadding, W * (1 - globalPadding), W * globalPadding, W * (1 - globalPadding))
 }
+function isListItemInString(string, list) {
+  console.log("is string in list")
+  for (const s of list) {
+    console.log(string)
+    console.log(s)
+    if (string.includes(s)) {
+      console.log("returning true")
+      return true
+    }
+  }
+  console.log("returning false")
+  return false
+}
 
-async function getRandomAssetFromFolder(assetDir) {
-  console.log("getting random asset from folder: " + assetDir)
-  // console.log("assetFolder: " + shapes[assetDir])
-  // let dirIdx = ibtw(0, many_shapes.length)
-  // let file = rFrom(many_shapes[dirIdx]["files"])
+async function getRandomAssetFromFolder(assetDir, options) {
   let currImgPath = "assets/" + assetDir + "/" + rFrom(shapes[assetDir])
-  console.log("currImgPath: " + currImgPath)
+  if (options && options["exluded_filename_terms"]) {
+    while (isListItemInString(currImgPath, options["exluded_filename_terms"])) {
+      currImgPath = "assets/" + assetDir + "/" + rFrom(shapes[assetDir])
+      console.log("new currImgPath: " + currImgPath)
+    }
+  }
   let currImg = await sk.loadImage(currImgPath);
+  // console.log("currImgPath: " + currImgPath)
   return currImg
   // currImages.push(currImg)
 }
@@ -206,16 +222,20 @@ async function createScribble(sk, n) {
   sk.clear();
   sk.strokeCap(sk.SQUARE)
   sk.background(165, 165, 165)
-  console.log("Bakground shape length" + shapes["Background"].length)
+  // console.log("Bakground shape length" + shapes["Background"].length)
   let bg = shapes["Background"][Math.floor(Math.random() * shapes["Background"].length)]
   let bg_path = "assets/" + "Background" + "/" + bg
   let bgType = ""
+  let bgColor = ""
   if (bg == "red.png") {
     bgType = "redBG_"
+    bgColor = "red"
   } else if (bg == "black.png") {
     bgType = "blackBG_"
+    bgColor = "black"
   } else if (bg == "white.png") {
     bgType = "whiteBG_"
+    bgColor = "white"
   } else {
     console.log("unhandled background file: " + bg)
     exit()
@@ -226,9 +246,7 @@ async function createScribble(sk, n) {
   sk.image(bgImg, 0, 0)
 
   let mainImg
-  for (let sh in shapes) {
-    console.log("shape dir: " + sh)
-  }
+
   if (p(.5)) { //main left
     mainImg = await getRandomAssetFromFolder(bgType + "main_left")
 
@@ -236,20 +254,29 @@ async function createScribble(sk, n) {
     mainImg = await getRandomAssetFromFolder(bgType + "main_right")
 
   }
-  console.log("mainImg: " + (typeof mainImg))
-  console.log("mainImg: " + mainImg)
+  // console.log("mainImg: " + (typeof mainImg))
+  // console.log("mainImg: " + mainImg)
   sk.image(mainImg, W * .05 + 3, W * .05 + 3, W * .9 - 3, W * .9 - 3)
   let addonShapes = []
-  addonShapeBaseNames.forEach((addon) => {
-    addonShapes.push(bgType + addon)
+  let addonShapeOrder = [0, 1, 2].sort(() => Math.random() - 0.5)
+  console.log("addonShapeOrder:" + addonShapeOrder)
+  // addonShapeBaseNames.forEach((addon) => {
+  //   addonShapes.push(bgType + addon)
+  // })
+  addonShapeOrder.forEach((addonIdx) => {
+    addonShapes.push(bgType + addonShapeBaseNames[addonIdx])
   })
-  console.log("altered addons: " + addonShapes)
+  // console.log("altered addons: " + addonShapes)
   for (let s of addonShapes) {
     let addonImg = await getRandomAssetFromFolder(s)
     sk.image(addonImg, 0, 0, addonImg.width, addonImg.height)
   }
 
-  let logoImg = await getRandomAssetFromFolder("logo")
+  let centerShape = await getRandomAssetFromFolder(bgType + centerShapeDir)
+  sk.image(centerShape, 0, 0, centerShape.width, centerShape.height)
+
+
+  let logoImg = await getRandomAssetFromFolder("logo", { "exluded_filename_terms": [bgColor] })
   let imgRatio = logoImg.width / logoImg.height
   sk.image(logoImg, W * .07, W * .75, W * .2 * imgRatio, W * .2)
   // sk.blendMode(sk.MULTIPLY);
@@ -260,7 +287,7 @@ async function createScribble(sk, n) {
   // sk.fill(255, 255, 255, 20)
   // sk.rect(0, 0, W, H)
   //Saves the image for test review: Remove from production
-  sk.saveCanvas(sk, "dappCon" + n, 'png');
+  sk.saveCanvas(sk, "../gen/dappCon0625" + n, 'png');
 }
 
 async function createDapp(sk, n) {
@@ -399,8 +426,8 @@ async function createDapp(sk, n) {
 
 function randomShape(sk, x, y, r, a, sides) {
   // fill(0, 0, 0)
-  console.log("drawing shape" + " at " + x + ", " + y)
-  console.log("r: " + r + ", a: " + a + ", sides: " + sides)
+  // console.log("drawing shape" + " at " + x + ", " + y)
+  // console.log("r: " + r + ", a: " + a + ", sides: " + sides)
   if (orthShape == 0) {
     sk.circle(x, y, r)
   } else {
