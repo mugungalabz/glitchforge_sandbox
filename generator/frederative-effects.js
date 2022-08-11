@@ -1,6 +1,9 @@
 import { init } from "./effects.js";
 import { greenify } from "./util.js";
 
+const Y_AXIS = 1;
+const X_AXIS = 2;
+
 // util functions
 // select random item from array
 export function randArray(array) {
@@ -15,8 +18,6 @@ function index(g, x, y) {
 function getScale(g) {
   let referenceSize = 1000;
   return g.width / referenceSize;
-  // let hasMaxSize = false;
-  // return Math.ceil(1, g.map(g.width, 0, referenceSize, 0, 1, hasMaxSize));
 }
 
 //(x2-x1)^2 + (y2-y1)^2 <= (r1+r2)^2
@@ -24,71 +25,10 @@ function circCollision(x1, y1, x2, y2, r1, r2, rdiff_squared) {
   let l = (x2 - x1) ** 2 + (y2 - y1) ** 2;
   // let r = (r1 + r2) ** 2;
 
-  return l <= rdiff_squared;//r;
+  return l <= rdiff_squared;;
 }
 
 // exports
-export function drip(g, features) {
-  console.log('drip');
-  let _scale = getScale(g);
-  g.loadPixels();
-
-  let drip_dir = features['Drip Direction'];//randArray(['horizontal', 'vertical', 'diagonal']);
-  let crazy_directions = features['Drip Crazy'];//randArray([true, false]);
-  let numParticles = 500;
-
-  let particles = [];
-  for (let i = 0; i < numParticles; i++) {
-    let life = g.random(100, 1000);
-    let p = { x: g.random(g.width), y: g.random(g.height), life: life, olife: life };
-
-    let velo = randArray([1.0, -1.0]) * g.random(1.0, 3.0);
-    if (drip_dir == 'horizontal') {
-      p.vx = velo;
-      p.vy = 0;
-    } else if (drip_dir == 'vertical') {
-      p.vy = velo;
-      p.vx = 0;
-    } else {
-      p.vy = velo;
-      p.vx = velo;
-    }
-
-    if (crazy_directions) {
-      if (g.random() > 0.85)
-        p.vx = g.random(-velo, velo);
-      if (g.random() > 0.85)
-        p.vy = g.random(-velo, velo);
-    }
-
-    p.color = g.get(p.x, p.y);
-    if (g.random() > 0.95 && features['Accent Color'] !== false)
-      p.color = g.color(features['Accent Color']);
-
-    particles.push(p);
-  }
-
-  g.noStroke();
-  while (particles.length > 0) {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      let p = particles[i];
-      let c = g.color(p.color);
-      c.setAlpha(g.map(p.life, p.olife, 0, 255, 20));
-      g.fill(c);
-      g.circle(p.x, p.y, g.map(p.life, p.olife, 0, 5 * _scale, 0.25 * _scale));
-      p.life--;
-      p.x += p.vx;
-      p.y += p.vy;
-
-      if (p.life <= 0 || p.x < 0 || p.x > g.width - 1 || p.y < 0 || p.y > g.height - 1) {
-        particles.splice(i, 1);
-      }
-    }
-  }
-
-  return g;
-
-}
 
 // Floyd-Steinberg dithering 
 // (code based on this sketch: https://openprocessing.org/sketch/1192123)
@@ -138,392 +78,389 @@ export function dither(g) {
   g.updatePixels();
   return g;
 }
-// export function dither(g) {
-//   g.loadPixels();
 
-//   let _scale = getScale(g);
-//   for (let y = 0; y < g.height - _scale; y++) {
-//     for (let x = _scale; x < g.width - _scale; x++) {
-//       let oldr = g.pixels[index(g, x, y)];
-//       let oldg = g.pixels[index(g, x, y) + 1];
-//       let oldb = g.pixels[index(g, x, y) + 2];
-
-//       let factor = 1.0;
-//       let newr = g.round((factor * oldr) / 255) * (255 / factor);
-//       let newg = g.round((factor * oldg) / 255) * (255 / factor);
-//       let newb = g.round((factor * oldb) / 255) * (255 / factor);
-
-//       g.pixels[index(g, x, y)] = newr;
-//       g.pixels[index(g, x, y) + 1] = newg;
-//       g.pixels[index(g, x, y) + 2] = newb;
-
-//       for (let _y = 1; _y <= _scale; _y++) {
-//         for (let _x = 1; _x <= _scale; _x++) {
-//           g.pixels[index(g, x + _x, y)] += ((oldr - newr) * 7) >> 4;
-//           g.pixels[index(g, x + _x, y) + 1] += ((oldr - newr) * 7) >> 4;
-//           g.pixels[index(g, x + _x, y) + 2] += ((oldr - newr) * 7) >> 4;
-
-//           g.pixels[index(g, x - _x, y + _y)] += ((oldr - newr) * 3) >> 4;
-//           g.pixels[index(g, x - _x, y + _y) + 1] += ((oldr - newr) * 3) >> 4;
-//           g.pixels[index(g, x - _x, y + _y) + 2] += ((oldr - newr) * 3) >> 4;
-
-//           g.pixels[index(g, x, y + _y)] += ((oldr - newr) * 5) >> 4;
-//           g.pixels[index(g, x, y + _y) + 1] += ((oldr - newr) * 5) >> 4;
-//           g.pixels[index(g, x, y + _y) + 2] += ((oldr - newr) * 5) >> 4;
-
-//           g.pixels[index(g, x + _x, y + _y)] += ((oldr - newr) * 1) >> 4;
-//           g.pixels[index(g, x + _x, y + _y) + 1] += ((oldr - newr) * 1) >> 4;
-//           g.pixels[index(g, x + _x, y + _y) + 2] += ((oldr - newr) * 1) >> 4;
-//         }
-//       }
-//     }
-//   }
-//   g.updatePixels();
-//   return g;
-// };
-
-// slice up an image and stitch back together
-export function sliceUp(g, features) {
-  console.log("slice")
-  let stitched = g.createGraphics(g.width, g.height);
-  stitched.copy(g, 0, 0, g.width, g.height, 0, 0, g.width, g.height);
-
-  let amt = 50;
-  let detail = features['Slice Up Detail'];
-  if (detail == 'small') {
-    amt = g.random(10, 20) | 0;
-  } else if (detail == 'medium') {
-    amt = g.random(40, 60) | 0;
-  } else {
-    amt = g.random(125, 175) | 0;
+// based on : https://p5js.org/examples/color-linear-gradient.html
+function setGradient(x, y, w, h, c1, c2, axis, gfx, _sk) {
+  gfx.noFill();
+  if (axis === Y_AXIS) {
+    // Top to bottom gradient
+    for (let i = y; i <= y + h; i++) {
+      let inter = _sk.map(i, y, y + h, 0, 1);
+      let c = _sk.lerpColor(c1, c2, inter);
+      gfx.stroke(c);
+      gfx.line(x, i, x + w, i);
+    }
+  } else if (axis === X_AXIS) {
+    // Left to right gradient
+    for (let i = x; i <= x + w; i++) {
+      let inter = _sk.map(i, x, x + w, 0, 1);
+      let c = _sk.lerpColor(c1, c2, inter);
+      gfx.stroke(c);
+      gfx.line(i, y, i, y + h);
+    }
   }
-
-  for (let i = 0; i < amt; i++) {
-    let slice = g.random(1, 100) | 0;
-    let y = g.random(0, g.height - slice);
-
-    let g2 = g.createGraphics(g.width, slice);
-    g2.copy(g, 0, y, g.width, slice, 0, 0, g.width, slice);
-
-    if (g.random() > 0.5)
-      dither(g2);
-
-    let y2 = g.random(0, g.height - slice);
-
-    stitched.copy(g2, 0, 0, g2.width, g2.height, 0, y2, g2.width, g2.height);
-  }
-
-  g.copy(stitched, 0, 0, stitched.width, stitched.height, 0, 0, g.width, g.height);
-  return g;
 }
 
 // draw shadow on object
 // based on: https://p5js.org/reference/#/p5/drawingContext
-export function drawShadow(g, x, y, b, c) {
-  g.drawingContext.shadowOffsetX = x;
-  g.drawingContext.shadowOffsetY = y;
-  g.drawingContext.shadowBlur = b;
-  g.drawingContext.shadowColor = g.color(c);
+export function drawShadow(g, x, y, b, c, _sk) {
+  _sk.drawingContext.shadowOffsetX = x;
+  _sk.drawingContext.shadowOffsetY = y;
+  _sk.drawingContext.shadowBlur = b;
+  _sk.drawingContext.shadowColor = _sk.color(c);
 };
 
-// pixel sort-ish
-export function pixelDrag(g, features) {
-  console.log("pixel drag")
-  let _scale = getScale(g);
+// draw circle or square with some random jitter
+function drawPoint(x, y, R, gfx, _sk, dmode) {
+  let _r = _sk.random(R - R / 4, R + R / 4);
+  if (dmode == 'square') {
+    gfx.rectMode(_sk.CENTER);
+    gfx.square(x, y, _r);
+  } else if (dmode == 'circle')
+    gfx.circle(x, y, _r);
+  else
+    gfx.point(x, y);
 
-  g.loadPixels();
-  for (let i = 0; i < features['Number of Pixels']; i++) {
-    let x = g.random(0, g.width - 1) | 0;
-    let y = g.random(0, g.width - 1) | 0;
-
-    let col = g.color(g.get(x, y));
-
-    let initSize = (g.random(1, 10) | 0) * _scale;
-
-    if (features["Pixel Drag Direction"] == "vertical") {
-      let y2 = g.random(y + (g.height - y) / 2, g.height - y);
-      g.strokeWeight(1.0 * _scale);
-      for (let _y = y; _y < y2; _y++) {
-        if (g.random() > g.random()) col = g.color(g.get(x, _y));
-        let a = g.map(_y, y, y2, 255, 0);
-        if (g.random() > g.random()) a = g.random(0, 255) | 0;
-        col.setAlpha(a);
-        g.fill(g.color(col));
-        g.square(x, _y, (g.random(-1.0, 1.0) * _scale) + g.map(_y, y, y2, initSize, 0.25 * _scale));
-      }
-    } else if (features["Pixel Drag Direction"] == "horizontal") {
-      let x2 = g.random(x + (g.width - x) / 2, g.width - x);
-      g.strokeWeight(1.0 * _scale);
-      for (let _x = x; _x < x2; _x++) {
-        if (g.random() > g.random()) col = g.color(g.get(_x, y));
-        let a = g.map(_x, x, x2, 255, 0);
-        if (g.random() > g.random()) a = g.random(0, 255) | 0;
-        col.setAlpha(a);
-        g.fill(g.color(col));
-        g.square(_x, y, (g.random(-1.0, 1.0) * _scale) + g.map(_x, x, x2, initSize, 0.25 * _scale));
-      }
-    } else { // diag
-      let y2 = g.random(y + (g.height - y) / 2, g.height - y);
-      g.strokeWeight(1.0 * _scale);
-      for (let _y = y; _y < y2; _y++) {
-        if (g.random() > g.random()) col = g.color(g.get(x, _y));
-        let a = g.map(_y, y, y2, 255, 0);
-        if (g.random() > g.random()) a = g.random(0, 255) | 0;
-        col.setAlpha(a);
-        g.fill(g.color(col));
-        g.square(x, _y, (g.random(-1.0, 1.0) * _scale) + g.map(_y, y, y2, initSize, 0.25 * _scale));
-        x++;
-        if (x > g.width - 1) break;
-      }
-    }
+  for (let _ = 0; _ < _sk.random(2, 10); _++) {
+    if (dmode == 'square')
+      gfx.square(x + _sk.random(-3, 3), y + _sk.random(-3, 3), _r);
+    else if (dmode == 'circle')
+      gfx.circle(x + _sk.random(-3, 3), y + _sk.random(-3, 3), _r);
+    else
+      gfx.point(x, y);
   }
-
-
-  return g;
 }
 
-export function smear(g, features) {
-  console.log('smear');
+// pointillism feature
+export function drawPoints(g, features) {
+  let smearPoints = [];
+  let g2 = g.createGraphics(g.width, g.height);
+  console.log('drawPoints');
+
   let _scale = getScale(g);
 
-  let x = g.random(0, g.width - 1);
-  let y = g.random(0, g.height - 1);
-  let w = g.random(1, 3) * _scale;
+  let _size = features['Pointillism-Size'];
+  let dir = features['Pointillism-Direction'];
+  let dmode = features['Pointillism-Mode'];
+  let plife = features['Pointillism-Life'];
 
-  let g2 = g.createImage(w, g.height);
-  let g3 = g.createImage(w, g.height);
+  let R;
+  if (_size == "small")
+    R = g.random(0.5, 2) * _scale;
+  else if (_size == "medium")
+    R = g.random(3, 6) * _scale;
+  else
+    R = g.random(7, 12) * _scale;
 
-  g2.copy(g, x, 0, w, g.height, 0, 0, w, g.height);
-  g3.copy(g, 0, y, g.width, w, 0, 0, g.width, w);
+  let R2 = R * 2; // diameter
 
-  // for (let i = 0; i < g.random(1, 3) | 0; i++) {
+  g2.textAlign(g.CENTER, g.CENTER);
+  g2.textFont("Courier");
+  g2.textSize(R);
 
-    for (let _x = 0; _x < g.width; _x++) {
-      if (g.random() > g.random()) {
-        // if (g.random() > 0.95) {//g.random()) {
-        //   // if (g.random() > g.random())
-        //     g.translate(g.width / 2, g.height / 2);
+  g.loadPixels();
 
-        //   g.rotate(randArray([90, 180]));//g.random(0, 360));
+  g2.background(0);
+  let bgcol = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+  bgcol.setAlpha(g.random(10, 220));
+  setGradient(0, 0, g2.width, g2.height, g.color(0), bgcol, Y_AXIS, g2, g);
+
+  g2.noStroke();
+
+  for (let y = 0; y < g.height; y += R2) {
+    for (let x = 0; x < g.width; x += R2) {
+
+      let col = g.color(g.get(x, y));
+      let col2 = g.color(g.get(x, y));
+      col2.setAlpha(128);
+      if (g.random() > 0.99) {
+        g2.stroke(0);
+        let plife = features['Pointillism-Life'];
+        let life = g.random(5, 10) * _scale;
+        if (plife == 'random')
+          life = g.random(2, 20) * _scale;
+        else if (plife == 'long')
+          life = g.random(12, 20) * _scale;
+        smearPoints.push({ R: R, x: x, y: y, life: life, olife: life });
         // }
-
-        g.copy(g2, 0, 0, w, g.height, _x, 0, w, g.height);
+      } else {
+        g2.stroke(col);
+        g2.fill(col2);
       }
+
+
+      drawPoint(x, y, R, g2, g, dmode);
     }
+  }
 
-    for (let _y = 0; _y < g.height; _y++) {
-      if (g.random() > g.random()) {
-        // if (g.random() > 0.95) {//g.random()) {
-        //   // if (g.random() > g.random())
-        //     g.translate(g.width / 2, g.height / 2);
+  // smear with a timeout 
+  let timeout = 1000;
+  while (smearPoints.length > 0) {
+    for (let i = smearPoints.length - 1; i >= 0; i--) {
+      g2.stroke(g.color(0, 0, 0, g.random(10, 100)));
+      g2.fill(g.color(0, 0, 0, g.random(10, 100)));
+      let p = smearPoints[i];
 
-        //   g.rotate(randArray([90, 180]));//g.random(0, 360));
-        // }
-        g.copy(g3, 0, 0, g.width, w, 0, _y, g.width, w);
-      }
+      let _r = p.R / 2;
+      if (features['Pointillism-TrailOff'] === true)
+        _r = g.map(p.life, p.olife, 0, p.R / 2, 0);
+
+      g2.strokeWeight(_r);
+      drawPoint(p.x, p.y, _r, g2, g, dmode);
+
+      if (dir == 'left')
+        p.x -= p.R / 2
+      else if (dir == 'right')
+        p.x += p.R / 2
+      else if (dir == 'up')
+        p.y -= p.R / 2
+      else
+        p.y += p.R / 2
+
+      p.life--;
+      if (p.x < 0 || p.x > g2.width || p.y < 0 || p.y > g2.height || p.life <= 0) smearPoints.splice(i, 1);
     }
-  // }
+    timeout--;
+    if (timeout <= 0) {
+      console.log("pointillism smear bailed out");
+      break;
+    }
+  }
 
+  // overwrite the main sketch and return
+  g.image(g2, 0, 0);
   return g;
 }
 
-// center drip
-// TOO SLOW
-export function centerDrip(g, features) {
-  console.log('center drip');
-
-  let circ_r = g.width / g.random(1.5, 3);
-  let _scale = getScale(g);
-
-  // let pixels = g.get();
-  // console.log(pixels);
-
-  g.push();
-  g.loadPixels();
-  g.translate(g.width/2, g.height/2);
-  for (let i = 0; i < 1000; i++) {
-    g.strokeWeight(5*_scale);//(g.random(0.5, 10.0)|0) * _scale);
-    let r = g.random(0,circ_r)|0;
-    let theta = g.random(0.0, g.TWO_PI);
-
-    let x = r * Math.cos(theta);
-    let y = r * Math.sin(theta);
-
-    // let col = g.color(g.get(x, y));
-    // x += g.width/2;
-    // y += g.height/2;
-    let col = g.get(x,y);
-    // if (col[0] > 10 && col[1] > 10 && col > 10) {
-      let y2 = g.random(y+1, g.height-y)|0;
-      for (let _y = y; _y < y2; _y++) {
-
-        // if (_y < y2*0.8)
-        //   col.setAlpha(180);
-        // else
-        //   col.setAlpha(g.map(_y, y, y2, 180, 0));
-        console.log(g.width, g.height, x, y, col, greenify(col, 255))
-
-        col = greenify(g.color(col), 255);
-        g.stroke(g.color(col));
-        g.point(x, _y);
-      }
-    // }
-  }
-  g.pop();
-
-  return g;
-}
-
-// flow field
-export function addFlow(g, features) {
-  console.log("flow")
-  // let g = sk.createGraphics(sk.width, sk.height);
-  // g.pixelDensity(1);
-  let _scale = getScale(g);
-
-  // g.fill(g.color(0, 0, 0, 80));
-  let offset = g.width * 0.15;
-  // g.noStroke();
-  // g.rect(offset, offset, g.width - 2 * offset, offset);
-  // g.rect(offset, offset, offset, g.height - 2 * offset);
-  // g.rect(offset, g.height - 2 * offset, g.width - 2 * offset, offset);
-  // g.rect(g.width - 2 * offset, offset, offset, g.height - 2 * offset);
-
-  console.log(`Scale: ${_scale}`);
-
-  // setup noise field
-  let grid = [];
-  let z = g.random(10000) | 0;
-
-  let flow_type = features['Flow Type'];
-  let t = g.random();
-  for (let r = 0; r < g.height; r++) {
-    grid[r] = [];
-    for (let c = 0; c < g.width; c++) {
-      let n = g.noise(c * 0.01, r * 0.01, z);
-
-
-      // if (window.$fxhashFeatures['Flow Style'] == 'clean')
-      // classy
-      if (flow_type == 'Clean')
-        grid[r][c] = g.map(n, 0.0, 1.0, 0.0, g.TWO_PI);
-
-      // else
-      // edgy
-      else if (flow_type == 'Edgy')
-        grid[r][c] = Math.ceil(
-          (g.map(n, 0.0, 1.0, 0.0, g.TWO_PI) * (g.PI / 4)) / (g.PI / 4)
-        );
-
-      else // random
-        grid[r][c] = n;
-
-      // if (g.random() > 0.5) {
-      if (features['Flow Center'] === true) {
-        if ((c >= offset + g.random(-offset / 2, offset / 2) && c < g.width - offset + g.random(-offset / 2, offset / 2) && r >= offset + g.random(-offset / 2, offset / 2) && r <= offset * 2 + g.random(-offset / 2, offset / 2)) ||
-          (c >= offset + g.random(-offset / 2, offset / 2) && c <= 2 * offset + g.random(-offset / 2, offset / 2) && r >= offset + g.random(-offset / 2, offset / 2) && r <= g.height - offset + g.random(-offset / 2, offset / 2)) ||
-          (c >= g.width - 2 * offset + g.random(-offset / 2, offset / 2) && c <= g.width - offset + g.random(-offset / 2, offset / 2) && r >= offset + g.random(-offset / 2, offset / 2) && r <= g.height - offset + g.random(-offset / 2, offset / 2)) ||
-          (c >= offset + g.random(-offset / 2, offset / 2) && c <= g.width - offset + g.random(-offset / 2, offset / 2) && r >= g.height - 2 * offset + g.random(-offset / 2, offset / 2) && r <= g.height - offset + g.random(-offset / 2, offset / 2)))
-          grid[r][c] = null;
-      }
-
-      // if (window.$fxhashFeatures['Flow Avoid'] != 'off') {
-      // let _col = g.get(c, r);
-      // if (window.$fxhashFeatures['Flow Avoid'] == 'dark') {
-      // avoid darker
-      // if (_col[0] < 50 && _col[1] < 50 && _col[2] < 50)
-      // grid[r][c] = null;
-      // avoid lighter
-      // else
-      // if (_col[0] > 220 && _col[1] > 220 && _col[2] > 220) grid[r][c] = null;
-      // }
-      // }
-    }
-  }
-
-
-  /// POSSIBLY ADD IN BLACK / OTHER COLORS?
-
-  // add particles
-  let particles = [];
-  g.loadPixels();
-  let particleMultiplier = features['Flow Multiplier'];
-  for (let i = 0; i < g.width * particleMultiplier; i++) {
-    let x = g.int(g.random(0, g.width));
-    let y = g.int(g.random(0, g.height));
-    let c = g.color(g.get(x, y));
-    let s = g.random(0.5, 2.0);
-    if (g.random() > 0.9) {
-      c = g.color(0);
-      s = g.random(2.0, 5.0);
-    }
-    if (g.random() > 0.9 && features['Accent Color'] !== false)
-      c = g.color(features['Accent Color']);
-    // if (window.$fxhashFeatures['Particle Cyberpunk'])
-    // if (random() > 0.9) c = randArray([color(255, 0, 255), color(0, 255, 0)]);
-
-    // if (g.random() > 0.98) 
-    //   c = g.random([g.color(255, 0, 255), g.color(0, 255, 0)]);
-
-    particles.push({ x: x, y: y, s: s * _scale, col: g.color(c) });
-  }
-
-  // iterate and draw
-  for (let p of particles) {
-    g.noStroke();
-
-    // let nextCol = randArray([color(255,0,255), color(0,255,0), color(0,0,255)]);
-    let num = g.int(g.random(100, 1000));
-    for (let i = 0; i < num; i++) {
-      // let c = lerpColor(p.col, nextCol, map(i,0,num,0.0,1.0));
-      p.col.setAlpha(g.map(i, 0, num, 255, 0));
-      g.fill(p.col);//c);
-      let col = g.int(p.x);//int(x / cellsize);
-      let row = g.int(p.y);//int(y / cellsize);
-
-      if (row in grid && col in grid[row]) {
-        if (grid[row][col] == null) { break; }
-        else {
-          let angle = grid[row][col];
-          let xstep = 1 * g.cos(angle);
-          let ystep = 1 * g.sin(angle);
-
-          let _locscale = p.s;
-          if (angle >= g.PI >> 1 && angle < (3 * g.PI) >> 1) _locscale = g.map(p.s, g.PI >> 1, 3 * g.PI >> 1, 1.0, 2.0);
-
-          g.square(p.x, p.y, _locscale);//*_scale);
-
-          p.x += xstep;
-          p.y += ystep;
-        }
-
-        if (p.x < 0 || p.x > g.width - 1 || p.y < 0 || p.y > g.height - 1) break;
-      } else break;
-    }
-  }
-  return g;
-}
-
-// glitchify image
-export function glitchifyImg(g) {
-  console.log("glitchify");
-
+export function glitchify2(g, features) {
+  console.log("glitchify2")
   let g2 = g.createGraphics(g.width, g.height);
 
-  g.loadPixels();
-  let cellsize = g.width * 0.05;
-  let cs = cellsize / 2;
-  g2.noStroke();
-  g2.rectMode(g.CENTER);
-  for (let y = 0; y < g.height; y += cellsize) {
-    for (let x = 0; x < g.width; x += cellsize) {
-      let c = g.color(g.get(x + cs, y + cs));
-      c.setAlpha(g.int(g.random(0, 155)));
-      g2.fill(c);
-      g2.square(x, y, cellsize + g.random(-5, 5));
+  // for (let _ = 0; _ < g.random(10,500); _++) {
+  for (let _ = 0; _ < g.random(10, 200); _++) {
+    let w = g.random(10, g.width / 2) | 0;
+    let h = g.random(10, g.height) | 0;
+    let x = g.random(0, g.width - w) | 0;
+    let y = g.random(0, g.height - h) | 0;
+
+    let x2 = g.random(0, g.width - w) | 0;
+    let y2 = g.random(0, g.height - h) | 0;
+
+    g.copy(x, y, w, h, x2, y2, w, h);
+  }
+
+  g.image(g2, 0, 0, g2.width, g2.height);
+  return g;
+}
+
+export function overdot(g, features) {
+  let g2 = g.createGraphics(g.width, g.height);
+  let _scale = getScale(g);
+
+  for (let _2 = 0; _2 < g.random(1, 5) | 0; _2++) {
+    let _r = g.random(g.width / 4, g.width / 16);
+    let _x = g.random(_r / 2, g.width - _r / 2);
+    let _y = g.random(_r / 2, g.height - _r / 2);
+
+    let col = g2.color(255, 0, 0, 100);
+    g.loadPixels();
+    if (g.random() > 0.5)
+      col = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+
+    g2.fill(col)
+    g2.noStroke();
+
+    let pt_r = 0.5 * _scale;
+    let r_sq = (pt_r + _r) ** 2;
+
+    drawShadow(g2, 0, 0, 10, g.random([g.color(255, 0, 255), g.color(0, 255, 0)]), g);
+
+    for (let _y2 = _y + _r; _y2 < g2.height; _y2 += g.random(1.0, 3.0) * _scale) {
+      drawPoint(_x + g.random(-3, 3) * _scale, _y2, pt_r, g2, g, 'square');
+    }
+
+    for (let _y2 = _y - _r; _y2 < _y + _r; _y2 += g.random(1.0, 3.0) * _scale) {
+      let pnum = g.map(_y2, _y - _r, _y + _r, 0.8, 0.05) * 2 * _r;
+      for (let _ = 0; _ < pnum; _++) {
+        let _x2 = g.random(_x - _r, _x + _r);
+        if (g.random() > 0.4 && circCollision(_x2, _y2, _x, _y, 1.0, _r, r_sq))
+          drawPoint(_x2, _y2, pt_r, g2, g, 'circle');
+      }
     }
   }
 
-  g.copy(g2, 0, 0, g2.width, g2.height, 0, 0, g.width, g.height);
+  g.image(g2, 0, 0);
+  return g;
+}
+
+export function overdrive(g, features) {
+  let g2 = g.createGraphics(g.width, g.height);
+  let _scale = getScale(g);
+
+  g.loadPixels();
+  g2.noStroke();
+
+  let col1 = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+  let col2 = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+  let timeout = 100;
+  while (col1 == col2) {
+    col2 = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+
+    timeout--;
+    if (timeout <= 0) break;
+  }
+  setGradient(0, 0, g.width, g.height, col1, col2, Y_AXIS, g2, g);
+
+  for (let y = 0; y < g.height; y += g.random(1.0, 4.0) * _scale) {
+    let pnum = g.map(y, 0, g.height, 0.13, 0.05) * g.width;
+
+    let bactive = false;
+    drawShadow(g2, 0, 0, 0, 0, g);
+    if (g.random() > 0.9) {
+      bactive = true;
+      drawShadow(g2, 0, 0, 10, g.color(0, 255, 0, g.random(20, 120)), g);
+    }
+    for (let _2 = 0; _2 < pnum; _2++) {
+      let x = g.random(0, g.width) | 0;
+      let col;
+      if (bactive) col = g.color(255, 0, 255, 40);
+      else {
+        col = g.color(g.get(x, y));
+        col.setAlpha(g.random(20, 180));
+      }
+      g2.fill(col);
+      drawPoint(x, y, g.random(0.5, 5.0) * _scale, g2, g, g.random(['square', 'circle']));
+    }
+  }
+
+  g.image(g2, 0, 0);
+  return g;
+}
+
+export function turtle(g, features) {
+  let g2 = g.createGraphics(g.width, g.height);
+  let _scale = getScale(g);
+
+
+  let particles = [];
+  for (let _ = 0; _ < 500; _++) {
+    let life = g.random(50, 1000);
+
+    let vx, vy;
+    if (g.random() > 0.5) {
+      vx = g.random([-1, 1]);
+      vy = 0;
+    } else {
+      vy = g.random([-1, 1]);
+      vx = 0;
+    }
+    let x = g.random(0, g.width - 1);
+    let y = g.random(0, g.height - 1)
+    let c = g.color(g.get(x, y))
+
+    if (g.random() > 0.8) {
+      c = g.random([
+        g.color(255, 0, 255),
+        g.color(0, 255, 0),
+        g.color(0, 0, 255),
+        g.color(255, 0, 0),
+      ]);
+      c.setAlpha(g.random(120, 220));
+    }
+
+    let s;
+    if (features['TurtleSize'] == 'small')
+      s = g.random(0.25, 1.0) * _scale;
+    else
+      s = g.random(0.5, 5.0) * _scale;
+
+
+    particles.push({
+      shadow: c,
+      s: s,
+      x: x, y: y,
+      life: life, olife: life, timer: 50,
+      vx: vx, vy: vy
+    });
+  }
+
+  let timeout = 1000;
+
+  g2.stroke(0);
+  while (timeout > 0) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      let p = particles[i];
+      drawShadow(g2, 0, 0, 10, p.shadow, g);
+
+      if (features['TurtleVarySize'])
+        g2.strokeWeight(p.s + (g.random([-1, 1]) * p.s / g.random(2.0, 4.0)));
+      else
+        g2.strokeWeight(p.s);
+
+      g2.stroke(g.color(g.get(p.x, p.y)));
+
+      if (features['TurtleJagged'])
+        drawPoint(p.x, p.y, p.s, g2, g, 'point');
+      else
+        g2.point(p.x, p.y);
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < 0 || p.x > g2.width - 1) p.vx *= -1.0;
+      if (p.y < 0 || p.y > g2.height - 1) p.vy *= -1.0;
+
+      p.timer--;
+      if (p.timer <= 0) {
+        p.timer = 50;
+        if (g.random() > 0.5) {
+          p.vx = g.random([-1, 1]);
+          p.vy = 0;
+        } else {
+          p.vy = g.random([-1, 1]);
+          p.vx = 0;
+        }
+      }
+
+      p.life--;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+    timeout--;
+
+    if (particles.length == 0) {
+      break;
+    }
+  }
+
+  g.image(g2, 0, 0);
+  return g;
+}
+
+export function blackhole(g, features) {
+  let g2 = g.createGraphics(g.width, g.height);
+  let _scale = getScale(g);
+
+  let _x = g.width / 2;
+  let _y = g.height / 2;
+  let _size = g.random(g.width / 4, g.width / 8);
+
+  drawShadow(g2, 0, 0, 10, g.color(0), g);
+
+  let col = g.color(0);
+  col.setAlpha(g.random(100, 220));
+  g2.stroke(col);
+  let _r = 0;
+
+  for (let R = 0; R < _size * 2.0; R += g.random(0.5, 2.0) * _scale) {
+    let tstart = g.random(0, g.TWO_PI);
+    for (let T = tstart; T < tstart + g.TWO_PI; T += g.PI / g.random(8, 64)) {
+      g2.strokeWeight(g.random(0.5, 2.0) * _scale);
+      let x = _x + (R * g.cos(T));
+      let y = _y + (R * g.sin(T));
+      drawPoint(x, y, 1, g2, g, 'point');
+    }
+  }
+
+  g.image(g2, 0, 0);
   return g;
 }
