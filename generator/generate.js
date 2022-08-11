@@ -1,6 +1,6 @@
 import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
 import { diceFrame, init as eInit } from "./effects.js";
-import { randArray, drawPoints, centerDrip, smear, sliceUp, dither, drip, drawShadow, addFlow, glitchifyImg, pixelDrag, glitchify2, turtle, overdot, overdrive, blackhole } from "./frederative-effects.js";
+import { randArray, drawPoints, dither, glitchify2, turtle, overdot, overdrive, blackhole } from "./frederative-effects.js";
 
 var G;
 var sk;
