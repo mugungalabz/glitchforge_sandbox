@@ -1,12 +1,14 @@
 import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
+// import { calculateRoyalties } from "./royalties.js";
 import { diceFrame, init as eInit } from "./effects.js";
-import { randArray, drawPoints, dither, glitchify2, turtle, overdot, overdrive, blackhole } from "./frederative-effects.js";
+import { randArray, drawPoints, dither, glitchify, turtle, overdot, overdrive, blackhole } from "./frederative-effects.js";
 
 var G;
 var sk;
 var r; //assign random hash accees
 var DIM; var WIDTH; var HEIGHT;
 var random = null;
+var royalties;
 
 // Guaranteed to be called first.
 export function init(rnd, txn_hash) {
@@ -24,7 +26,7 @@ export function getAssets() {
   }
   let files = [];
   let f = 'nukehype2/';
-  for (let i = 1; i <= 21; i++)
+  for (let i = 1; i <= 114; i++)
     files.push(`${f}${i}.png`)
 
   let retval = randArray(files);
@@ -93,9 +95,12 @@ export async function draw(sketch, assets, raw_asset_folders) {
   features['Pointillism-Size'] = null;
   features['Pointillism-Life'] = null;
   features['Pointillism-TrailOff'] = null;
+  features['TurtleNumber'] = null;
   features['TurtleSize'] = null;
   features['TurtleVarySize'] = null;
   features['TurtleJagged'] = null;
+  features['Glitchify-Density'] = null;
+  features['Glitchify-Shadows'] = null;
 
   if (features['Base'] == 'Pointillism') {
     features['Pointillism-Mode'] = randArray(['square', 'circle']);
@@ -104,9 +109,15 @@ export async function draw(sketch, assets, raw_asset_folders) {
     features['Pointillism-Life'] = randArray(['long', 'short', 'random']);
     features['Pointillism-TrailOff'] = randArray([true, false]);
   } else if (features['Base'] == 'Turtle') {
+    features['TurtleNumber'] = randArray(['few', 'average', 'many']),
     features['TurtleSize'] = randArray(['small', 'large']);
     features['TurtleVarySize'] = randArray([true, false]);
     features['TurtleJagged'] = randArray([true, false]);
+  }
+
+  if (features['Glitchify'] === true) {
+    features['Glitchify-Density'] = randArray(["maximal", "minimal"]);
+    features['Glitchify-Shadows'] = randArray([true, false]);
   }
 
   DIM = Math.min(WIDTH, HEIGHT);
@@ -139,34 +150,35 @@ export async function draw(sketch, assets, raw_asset_folders) {
     sk.image(referenceGraphic, 0, 0);
 
     /***********IMAGE MANIPULATION GOES HERE**********/
+    let royalty_tally = {};
     // let rainWeight = .5;
     // diceFrame(DIM / 20, DIM * rainWeight, sk, sk.createGraphics(DIM, DIM), { randomX: true, minXOffset: 1 });
     console.table(features);
 
     // draw points with circles or squares
     if (features['Base'] == 'Pointillism')
-      sk = drawPoints(sk, features);
+      sk = drawPoints(sk, features, royalties);
     // trying to kind of paint over image in a breathy fashion
     else if (features['Base'] == 'Overdrive')
-      sk = overdrive(sk, features);
+      sk = overdrive(sk, royalties);
     else // tuuuuurtle line drawing
-      sk = turtle(sk, features);
-
+      sk = turtle(sk, features, royalties);
+  
     // black hole
     if (features['Blackhole'] === true)
-      sk = blackhole(sk, features);
-
+      sk = blackhole(sk, features, royalties);
+  
     // matheson's red dot feature request
     if (features['Overdot'] === true)
-      sk = overdot(sk, features);
+      sk = overdot(sk, royalties);
 
     // glitch up a touch by copy/pasting regions
     if (features['Glitchify'] === true)
-      sk = glitchify2(sk, features);
+      sk = glitchify(sk, features, royalties);
 
-    // dither me timbers
-    if (features['Dithered'] === true)
-      sk = dither(sk);
+  // dither me timbers
+  if (features['Dithered'] === true)
+    sk = dither(sk, royalties);
 
     /***********IMAGE MANIPULATION ENDS HERE**********/
 
@@ -184,6 +196,11 @@ export async function draw(sketch, assets, raw_asset_folders) {
 
     //Times how long the image takes to run
     console.log("Time: " + (Date.now() - startmilli) / 1000 + " seconds");
+
+    // royalties = {
+    //   "decimals": 3,
+    // }
+    // calculateRoyalties(royalties, royalty_tally)
 
     return sketch.getCanvasDataURL(sketch);
   } catch (e) {

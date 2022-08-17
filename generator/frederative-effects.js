@@ -1,5 +1,12 @@
 import { init } from "./effects.js";
 import { greenify } from "./util.js";
+// import { addAuthorRoyalties } from "./royalties.js"
+const AUTHOR_TEZOS_ADDRESS = "TBD"
+
+// PLACEHOLDER
+function addAuthorRoyalties() {
+  return;
+}
 
 const Y_AXIS = 1;
 const X_AXIS = 2;
@@ -35,7 +42,8 @@ function circCollision(x1, y1, x2, y2, r1, r2, rdiff_squared) {
 function DivideBy255(value) {
   return (value + 1 + (value >> 8)) >> 8;
 }
-export function dither(g) {
+export function dither(g, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let referenceSize = 1000;
   let hasMaxSize = false;
   let _scale = Math.ceil(1, g.map(g.width, 0, referenceSize, 0, 1, hasMaxSize));
@@ -111,28 +119,36 @@ export function drawShadow(g, x, y, b, c, _sk) {
 };
 
 // draw circle or square with some random jitter
-function drawPoint(x, y, R, gfx, _sk, dmode) {
-  let _r = _sk.random(R - R / 4, R + R / 4);
-  if (dmode == 'square') {
-    gfx.rectMode(_sk.CENTER);
-    gfx.square(x, y, _r);
-  } else if (dmode == 'circle')
-    gfx.circle(x, y, _r);
-  else
-    gfx.point(x, y);
+function drawPoint(x, y, R, gfx, _sk, dmode, _scale = 1.0) {
+  let _r = _sk.random(R - R / 4, R + R / 4) * _scale / 2;
 
-  for (let _ = 0; _ < _sk.random(2, 10); _++) {
+  //Don't draw the actual point - removing this
+  //saves about 10 seconds
+  // if (dmode == 'square') {
+  //   gfx.rectMode(_sk.CENTER);
+  //   gfx.square(x, y, _r);
+  // } else if (dmode == 'circle')
+  //   gfx.circle(x, y, _r);
+  // else
+  //   gfx.point(x, y);
+
+  //Reducing the number of points here is a large factor in overall reduction
+  // for (let _ = 0; _ < _sk.random(2, 8); _++) {
+  let numPoints = randArray([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 4, 5,])
+  for (let _ = 0; _ < numPoints; _++) {
     if (dmode == 'square')
-      gfx.square(x + _sk.random(-3, 3), y + _sk.random(-3, 3), _r);
+      gfx.square(x + _sk.random(-3, 3) * _scale, y + _sk.random(-3, 3) * _scale, _r);
     else if (dmode == 'circle')
-      gfx.circle(x + _sk.random(-3, 3), y + _sk.random(-3, 3), _r);
+      gfx.ellipse(x + _sk.random(-3, 3) * _scale, y + _sk.random(-3, 3) * _scale, _r + _sk.random(-3, 3) * _scale, _r + _sk.random(-3, 3) * _scale);
+    // gfx.circle(x + _sk.random(-3, 3), y + _sk.random(-3, 3), _r);
     else
       gfx.point(x, y);
   }
 }
 
 // pointillism feature
-export function drawPoints(g, features) {
+export function drawPoints(g, features, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let smearPoints = [];
   let g2 = g.createGraphics(g.width, g.height);
   console.log('drawPoints');
@@ -142,16 +158,20 @@ export function drawPoints(g, features) {
   let _size = features['Pointillism-Size'];
   let dir = features['Pointillism-Direction'];
   let dmode = features['Pointillism-Mode'];
-  let plife = features['Pointillism-Life'];
+  // let plife = features['Pointillism-Life'];
 
   let R;
+  //increasing the sizes here means we create more "noise" 
+  //by drawing fewer circles. 
   if (_size == "small")
+    // R = g.random(2, 4) * _scale;
     R = g.random(0.5, 2) * _scale;
   else if (_size == "medium")
+    // R = g.random(5, 7) * _scale;
     R = g.random(3, 6) * _scale;
   else
     R = g.random(7, 12) * _scale;
-
+  console.log("R: " + R);
   let R2 = R * 2; // diameter
 
   g2.textAlign(g.CENTER, g.CENTER);
@@ -160,104 +180,152 @@ export function drawPoints(g, features) {
 
   g.loadPixels();
 
-  g2.background(0);
-  let bgcol = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
-  bgcol.setAlpha(g.random(10, 220));
-  setGradient(0, 0, g2.width, g2.height, g.color(0), bgcol, Y_AXIS, g2, g);
+  // g2.background(0);
+  // let bgcol = g.color(g.get(g.random(0, g.width), g.random(0, g.height)));
+  // bgcol.setAlpha(g.random(10, 220));
+  // setGradient(0, 0, g2.width, g2.height, g.color(0), bgcol, Y_AXIS, g2, g);
 
   g2.noStroke();
-
+  //Move life outside the loop, having constant live per smear
+  //maintains a similar effect on the granular level. 
+  let plife = features['Pointillism-Life'];
+  let life = g.random(5, 10) * _scale;
+  if (plife == 'random')
+    life = g.random(2, 20) * _scale;
+  else if (plife == 'long')
+    life = g.random(12, 20) * _scale;
+  console.log("Loop!")
+  g2.noStroke()
   for (let y = 0; y < g.height; y += R2) {
     for (let x = 0; x < g.width; x += R2) {
 
       let col = g.color(g.get(x, y));
       let col2 = g.color(g.get(x, y));
       col2.setAlpha(128);
-      if (g.random() > 0.99) {
+      if (g.random() > 0.98) {
         g2.stroke(0);
-        let plife = features['Pointillism-Life'];
-        let life = g.random(5, 10) * _scale;
-        if (plife == 'random')
-          life = g.random(2, 20) * _scale;
-        else if (plife == 'long')
-          life = g.random(12, 20) * _scale;
+
         smearPoints.push({ R: R, x: x, y: y, life: life, olife: life });
         // }
       } else {
+        let _a = g.random(0, 255) | 0;
+        col.setAlpha(_a);
+        col2.setAlpha(_a);
         g2.stroke(col);
         g2.fill(col2);
       }
 
 
-      drawPoint(x, y, R, g2, g, dmode);
+      drawPoint(x, y, R, g2, g, dmode, _scale);
     }
   }
 
   // smear with a timeout 
   let timeout = 1000;
-  while (smearPoints.length > 0) {
-    for (let i = smearPoints.length - 1; i >= 0; i--) {
-      g2.stroke(g.color(0, 0, 0, g.random(10, 100)));
-      g2.fill(g.color(0, 0, 0, g.random(10, 100)));
-      let p = smearPoints[i];
-
+  //set the smear shift outside of the loop
+  //to avoid if processing for each point.
+  let shift_x = 0
+  let shift_y = 0
+  if (dir == 'left')
+    shift_x = 0 - R / 2
+  else if (dir == 'right')
+    shift_x = R / 2
+  else if (dir == 'up')
+    shift_y = 0 - R / 2
+  else
+    shift_y = R / 2
+  //process each smearpoint 1 by one to reduce context switching
+  for (let p of smearPoints) {
+    g2.stroke(g.color(0, 0, 0, g.random(10, 100)));
+    g2.fill(g.color(0, 0, 0, g.random(10, 100)));
+    while (p.life > 0 && p.x > 0 && p.x < g2.width && p.y > 0 && p.y < g2.height) {
       let _r = p.R / 2;
       if (features['Pointillism-TrailOff'] === true)
         _r = g.map(p.life, p.olife, 0, p.R / 2, 0);
 
       g2.strokeWeight(_r);
-      drawPoint(p.x, p.y, _r, g2, g, dmode);
-
-      if (dir == 'left')
-        p.x -= p.R / 2
-      else if (dir == 'right')
-        p.x += p.R / 2
-      else if (dir == 'up')
-        p.y -= p.R / 2
-      else
-        p.y += p.R / 2
-
+      drawPoint(p.x, p.y, _r, g2, g, dmode, _scale);
+      p.x += shift_x
+      p.y += shift_y
       p.life--;
-      if (p.x < 0 || p.x > g2.width || p.y < 0 || p.y > g2.height || p.life <= 0) smearPoints.splice(i, 1);
-    }
-    timeout--;
-    if (timeout <= 0) {
-      console.log("pointillism smear bailed out");
-      break;
     }
   }
+  // while (smearPoints.length > 0) {
+  //   for (let i = smearPoints.length - 1; i >= 0; i--) {
+  //     g2.stroke(g.color(0, 0, 0, g.random(10, 100)));
+  //     g2.fill(g.color(0, 0, 0, g.random(10, 100)));
+  //     let p = smearPoints[i];
+
+  //     let _r = p.R / 2;
+  //     if (features['Pointillism-TrailOff'] === true)
+  //       _r = g.map(p.life, p.olife, 0, p.R / 2, 0);
+
+  //     g2.strokeWeight(_r);
+  //     drawPoint(p.x, p.y, _r, g2, g, dmode);
+
+  //     if (dir == 'left')
+  //       p.x -= p.R / 2
+  //     else if (dir == 'right')
+  //       p.x += p.R / 2
+  //     else if (dir == 'up')
+  //       p.y -= p.R / 2
+  //     else
+  //       p.y += p.R / 2
+
+  //     p.life--;
+  //     if (p.x < 0 || p.x > g2.width || p.y < 0 || p.y > g2.height || p.life <= 0) smearPoints.splice(i, 1);
+  //   }
+  //   timeout--;
+  //   if (timeout <= 0) {
+  //     console.log("pointillism smear bailed out");
+  //     break;
+  //   }
+  // }
 
   // overwrite the main sketch and return
   g.image(g2, 0, 0);
   return g;
 }
 
-export function glitchify2(g, features) {
-  console.log("glitchify2")
-  let g2 = g.createGraphics(g.width, g.height);
+export function glitchify(g, features, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
+  let _scale = getScale(g);
 
-  // for (let _ = 0; _ < g.random(10,500); _++) {
-  for (let _ = 0; _ < g.random(10, 200); _++) {
-    let w = g.random(10, g.width / 2) | 0;
-    let h = g.random(10, g.height) | 0;
+  if (features["Glitchify-Shadows"] === true)
+    drawShadow(g, 0, 0, 10 * _scale, g.color(20), g);
+  else
+    drawShadow(g, 0, 0, 0, 0, g);
+
+  let minVal = 10;
+  let maxVal = 50;
+  if (features['density'] == 'maximal') {
+    minVal = 100;
+    maxVal = 400;
+  }
+
+  for (let _ = 0; _ < g.random(minVal, maxVal) | 0; _++) {
+    let w = g.random(10 * _scale, g.width / 2) | 0;
+    let h = g.random(10 * _scale, g.height) | 0;
     let x = g.random(0, g.width - w) | 0;
     let y = g.random(0, g.height - h) | 0;
 
+    let g2 = g.createGraphics(w, h);
     let x2 = g.random(0, g.width - w) | 0;
     let y2 = g.random(0, g.height - h) | 0;
 
-    g.copy(x, y, w, h, x2, y2, w, h);
+    g2.copy(g, x, y, w, h, 0, 0, w, h);
+    g.image(g2, x2, y2);
   }
 
-  g.image(g2, 0, 0, g2.width, g2.height);
   return g;
 }
 
-export function overdot(g, features) {
+export function overdot(g, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let g2 = g.createGraphics(g.width, g.height);
   let _scale = getScale(g);
 
-  for (let _2 = 0; _2 < g.random(1, 5) | 0; _2++) {
+  for (let _2 = 0; _2 < g.random(1, 2) | 0; _2++) {
     let _r = g.random(g.width / 4, g.width / 16);
     let _x = g.random(_r / 2, g.width - _r / 2);
     let _y = g.random(_r / 2, g.height - _r / 2);
@@ -293,7 +361,8 @@ export function overdot(g, features) {
   return g;
 }
 
-export function overdrive(g, features) {
+export function overdrive(g, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let g2 = g.createGraphics(g.width, g.height);
   let _scale = getScale(g);
 
@@ -337,13 +406,20 @@ export function overdrive(g, features) {
   return g;
 }
 
-export function turtle(g, features) {
+export function turtle(g, features, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let g2 = g.createGraphics(g.width, g.height);
   let _scale = getScale(g);
 
-
   let particles = [];
-  for (let _ = 0; _ < 500; _++) {
+
+  let numTurtles = g.random(5,30);
+  if (features['TurtleNumber'] == 'average')
+    numTurtles = g.random(50, 100)|0;
+  else if (features['TurtleNumber'] == 'many')
+    numTurtles = g.random(150, 500)|0;
+
+  for (let _ = 0; _ < numTurtles; _++) {
     let life = g.random(50, 1000);
 
     let vx, vy;
@@ -436,7 +512,8 @@ export function turtle(g, features) {
   return g;
 }
 
-export function blackhole(g, features) {
+export function blackhole(g, royalties) {
+  addAuthorRoyalties(AUTHOR_TEZOS_ADDRESS, royalties);
   let g2 = g.createGraphics(g.width, g.height);
   let _scale = getScale(g);
 

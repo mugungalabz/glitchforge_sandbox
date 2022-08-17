@@ -14,7 +14,7 @@ async function run() {
   // const random = seedrandom(constantSeed);
 
   const txn_hash = "ooY6b3EDUB6zprbAiSByj3MFbgkLvSlVz8GSxLC4a1Szwzf12Mw";
-  const sketchCount = 100;//100;
+  const sketchCount = 50;//100;
 
   let assetPath = "./assets/nukehype2";
   let files = [];
