@@ -1,5 +1,5 @@
 import { distancePoint2Line, getTrianglePoints, drawTopColors, processAndDisplayColorTally, getTopColorWheel } from "./util.js";
-// import { calculateRoyalties } from "./royalties.js";
+import { calculateRoyalties } from "./royalties.js";
 import { diceFrame, init as eInit } from "./effects.js";
 import { randArray, drawPoints, dither, glitchify, turtle, overdot, overdrive, blackhole } from "./frederative-effects.js";
 
@@ -45,6 +45,12 @@ export function getAssets() {
 const features = {};
 export function getFeatures() {
   return features;
+}
+export function getMetadata() {
+  return {
+    "features": features,
+    "royalties": royalties
+  }
 }
 /*
   Get a random number between a and b
@@ -197,10 +203,10 @@ export async function draw(sketch, assets, raw_asset_folders) {
     //Times how long the image takes to run
     console.log("Time: " + (Date.now() - startmilli) / 1000 + " seconds");
 
-    // royalties = {
-    //   "decimals": 3,
-    // }
-    // calculateRoyalties(royalties, royalty_tally)
+    royalties = {
+      "decimals": 3,
+    }
+    calculateRoyalties(royalties, royalty_tally)
 
     return sketch.getCanvasDataURL(sketch);
   } catch (e) {

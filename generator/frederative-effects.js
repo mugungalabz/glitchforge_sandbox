@@ -1,12 +1,12 @@
 import { init } from "./effects.js";
 import { greenify } from "./util.js";
-// import { addAuthorRoyalties } from "./royalties.js"
-const AUTHOR_TEZOS_ADDRESS = "TBD"
+import { addAuthorRoyalties } from "./royalties.js"
+const AUTHOR_TEZOS_ADDRESS = "tz1VPj5VZ2oomjz2ToAMyuyP5y7ii1NgY753";
 
 // PLACEHOLDER
-function addAuthorRoyalties() {
-  return;
-}
+// function addAuthorRoyalties() {
+//   return;
+// }
 
 const Y_AXIS = 1;
 const X_AXIS = 2;
