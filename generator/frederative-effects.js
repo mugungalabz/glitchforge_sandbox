@@ -302,19 +302,20 @@ export function glitchify(g, features, royalties) {
     minVal = 100;
     maxVal = 400;
   }
-
-  for (let _ = 0; _ < g.random(minVal, maxVal) | 0; _++) {
+  let glitchCount = Math.floor(g.random(minVal, maxVal))
+  let clone = g.createGraphics(g.width, g.height)
+  for (let _ = 0; _ < glitchCount | 0; _++) {
     let w = g.random(10 * _scale, g.width / 2) | 0;
     let h = g.random(10 * _scale, g.height) | 0;
     let x = g.random(0, g.width - w) | 0;
     let y = g.random(0, g.height - h) | 0;
 
-    let g2 = g.createGraphics(w, h);
+    // let g2 = g.createGraphics(w, h);
     let x2 = g.random(0, g.width - w) | 0;
     let y2 = g.random(0, g.height - h) | 0;
-
-    g2.copy(g, x, y, w, h, 0, 0, w, h);
-    g.image(g2, x2, y2);
+    g.copy(clone, x, y, w, h, x2, y2, w, h)
+    // g2.copy(g, x, y, w, h, 0, 0, w, h);
+    // g.image(g2, x2, y2);
   }
 
   return g;
@@ -413,11 +414,11 @@ export function turtle(g, features, royalties) {
 
   let particles = [];
 
-  let numTurtles = g.random(5,30);
+  let numTurtles = g.random(5, 30);
   if (features['TurtleNumber'] == 'average')
-    numTurtles = g.random(50, 100)|0;
+    numTurtles = g.random(50, 100) | 0;
   else if (features['TurtleNumber'] == 'many')
-    numTurtles = g.random(150, 500)|0;
+    numTurtles = g.random(150, 500) | 0;
 
   for (let _ = 0; _ < numTurtles; _++) {
     let life = g.random(50, 1000);
