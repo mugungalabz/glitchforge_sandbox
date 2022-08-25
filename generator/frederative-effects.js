@@ -304,18 +304,15 @@ export function glitchify(g, features, royalties) {
   }
   let glitchCount = Math.floor(g.random(minVal, maxVal))
   let clone = g.createGraphics(g.width, g.height)
+  clone.copy(g, 0, 0, g.width, g.height, 0, 0, g.width, g.height);
   for (let _ = 0; _ < glitchCount | 0; _++) {
     let w = g.random(10 * _scale, g.width / 2) | 0;
     let h = g.random(10 * _scale, g.height) | 0;
     let x = g.random(0, g.width - w) | 0;
     let y = g.random(0, g.height - h) | 0;
-
-    // let g2 = g.createGraphics(w, h);
     let x2 = g.random(0, g.width - w) | 0;
     let y2 = g.random(0, g.height - h) | 0;
     g.copy(clone, x, y, w, h, x2, y2, w, h)
-    // g2.copy(g, x, y, w, h, 0, 0, w, h);
-    // g.image(g2, x2, y2);
   }
 
   return g;
