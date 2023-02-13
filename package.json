@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "gf_demo",
   "private": true,
   "scripts": {

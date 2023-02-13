@@ -1,0 +1,52 @@
+{
+    "lostlvels1": {
+        "bg": "CorruptedROM_059 2.png",
+        "bg_overlay": "CorruptedROM_059 2.pngCorruptedROM_059 2.png",
+        "thin": "CorruptedROM_059 2.pngCorruptedROM_059 2.png"
+    },
+    "lostlvels2": {
+        "bg": "CorruptedROM_055 copy.png",
+        "bg_overlay": "CorruptedROM_055 copy.pngCorruptedROM_055 copy.png",
+        "thin": "CorruptedROM_055 copy.pngCorruptedROM_055 copy.png"
+    },
+    "lostlvels3": {
+        "bg": "CorruptedROM_172.png",
+        "bg_overlay": "CorruptedROM_172.pngCorruptedROM_172.png",
+        "thin": "CorruptedROM_172.pngCorruptedROM_172.png"
+    },
+    "lostlvels4": {
+        "bg": "CorruptedROM_045 copy.png",
+        "bg_overlay": "CorruptedROM_045 copy.pngCorruptedROM_045 copy.png",
+        "thin": "CorruptedROM_045 copy.pngCorruptedROM_045 copy.png"
+    },
+    "lostlvels5": {
+        "bg": "CorruptedROM_147.png",
+        "bg_overlay": "CorruptedROM_147.pngCorruptedROM_147.png",
+        "thin": "CorruptedROM_147.pngCorruptedROM_147.png"
+    },
+    "lostlvels6": {
+        "bg": "CorruptedROM_034 copy.png",
+        "bg_overlay": "CorruptedROM_034 copy.pngCorruptedROM_034 copy.png",
+        "thin": "CorruptedROM_034 copy.pngCorruptedROM_034 copy.png"
+    },
+    "lostlvels7": {
+        "bg": "CorruptedROM_007 copy.png",
+        "bg_overlay": "CorruptedROM_007 copy.pngCorruptedROM_007 copy.png",
+        "thin": "CorruptedROM_007 copy.pngCorruptedROM_007 copy.png"
+    },
+    "lostlvels8": {
+        "bg": "CorruptedROM_147.png",
+        "bg_overlay": "CorruptedROM_147.pngCorruptedROM_147.png",
+        "thin": "CorruptedROM_147.pngCorruptedROM_147.png"
+    },
+    "lostlvels9": {
+        "bg": "CorruptedROM_044 copy.png",
+        "bg_overlay": "CorruptedROM_044 copy.pngCorruptedROM_044 copy.png",
+        "thin": "CorruptedROM_044 copy.pngCorruptedROM_044 copy.png"
+    },
+    "lostlvels10": {
+        "bg": "CorruptedROM_098 copy.png",
+        "bg_overlay": "CorruptedROM_098 copy.pngCorruptedROM_098 copy.png",
+        "thin": "CorruptedROM_098 copy.pngCorruptedROM_098 copy.png"
+    }
+}

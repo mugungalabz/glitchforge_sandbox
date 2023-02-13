@@ -2,6 +2,7 @@ import { saveRandomSectionsOfImage, wAlpha } from "./util.js";
 import { diceFrame, init as eInit } from "./effects.js";
 import react from "react";
 import { Linter } from "eslint";
+import * as fs from 'fs';
 
 var G;
 var globalPadding
@@ -26,9 +27,18 @@ export function init(rnd, txn_hash) {
 
 // Guaranteed to be called after setup(), can build features during setup
 // Add your rarity traits and attributes to the features object
-const features = {};
+var features = {};
+const metadata = {}
+var filename = ""
 export function getFeatures() {
-  return features;
+  console.log("getFeatures:" + JSON.stringify({
+    features: features,
+    filename: filename
+  }))
+  return {
+    features: features,
+    filename: filename
+  }
 }
 /*
   Get a random number between a and b
@@ -74,8 +84,8 @@ export async function draw(sketch, raw_assets) {
   let startmilli = Date.now();
   random = Math.random()
   //Fixed Canvas Size
-  W = 256;
-  H = 240;
+  W = 3840;
+  H = 3600;
   globalPadding = .05
   // DIM = Math.min(WIDTH, HEIGHT);
   l = W * globalPadding;
@@ -93,7 +103,7 @@ export async function draw(sketch, raw_assets) {
     console.log("Looping...");
     console.log("W, H: ", W, H);
     let folders = Object.keys(global_raw_assets)
-    for (let i = 1; i <= 1; i++) {
+    for (let i = 1; i <= 10; i++) {
       console.log("creating image ##############: " + i)
       await layerImages(sk, i)
 
@@ -101,7 +111,12 @@ export async function draw(sketch, raw_assets) {
 
     //Times how long the image takes to run
     console.log("Time: " + (Date.now() - startmilli) / 1000 + " seconds");
+    const output_json = JSON.stringify(metadata);
 
+    fs.writeFile('lost_levels.json', output_json, 'utf8', (err) => {
+      if (err) throw err;
+      console.log('The metadarta has been saved!');
+    });
     return sketch.getCanvasDataURL(sketch);
   } catch (e) {
     console.error(e)
@@ -109,22 +124,37 @@ export async function draw(sketch, raw_assets) {
 }
 
 async function applyRandomImage(sk, image_dir) {
-  let currImgPath = "assets/" + image_dir + "/" + rFrom(global_raw_assets[image_dir])
-  console.log("currImgPath: " + currImgPath)
+  let imageName = rFrom(global_raw_assets[image_dir])
+  let currImgPath = "assets/" + image_dir + "/" + imageName
   let currImg = await sk.loadImage(currImgPath);
   sk.image(currImg, 0, 0)
+  return currImgPath
 }
 
 async function layerImages(sk, n) {
   sk.createCanvas(W, H);
   sk.clear();
-
   // sk.background(165, 165, 165)
-  await applyRandomImage(sk, "bg")
-  await applyRandomImage(sk,"bg_overlay")
-  await applyRandomImage(sk,"thick")
-  await applyRandomImage(sk,"thin")
-  await applyRandomImage(sk,"details")
-  sk.saveCanvas(sk, "lostlvels" + n, 'png');
+  let currFilepath = await applyRandomImage(sk, "bg")
+  const bg_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  await applyRandomImage(sk, "bg_overlay")
+  const overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  await applyRandomImage(sk, "thick")
+  const thick_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  await applyRandomImage(sk, "thin")
+  const thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  await applyRandomImage(sk, "details")
+  const details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  filename = "lostlvels" + n
+  console.log("filename: " + filename)
+  features = {
+    "bg": bg_val,
+    "bg_overlay": overlay_val + thick_val,
+    "thin": thin_val + details_val
+  }
+  metadata[filename] = features
+  // console.log("features: " + features)
+  sk.saveCanvas(sk, filename, 'png');
+
 
 }
