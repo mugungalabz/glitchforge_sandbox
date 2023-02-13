@@ -111,12 +111,12 @@ export async function draw(sketch, raw_assets) {
 
     //Times how long the image takes to run
     console.log("Time: " + (Date.now() - startmilli) / 1000 + " seconds");
-    const output_json = JSON.stringify(metadata);
+    // const output_json = JSON.stringify(metadata);
 
-    fs.writeFile('lost_levels.json', output_json, 'utf8', (err) => {
-      if (err) throw err;
-      console.log('The metadarta has been saved!');
-    });
+    // fs.writeFile('lost_levels.json', output_json, 'utf8', (err) => {
+    //   if (err) throw err;
+    //   console.log('The metadarta has been saved!');
+    // });
     return sketch.getCanvasDataURL(sketch);
   } catch (e) {
     console.error(e)
@@ -155,6 +155,11 @@ async function layerImages(sk, n) {
   metadata[filename] = features
   // console.log("features: " + features)
   sk.saveCanvas(sk, filename, 'png');
+  const output_json = JSON.stringify(features);
 
+  fs.writeFile("metadata/" + filename + ".json", output_json, 'utf8', (err) => {
+    if (err) throw err;
+    console.log('The metadarta has been saved!');
+  });
 
 }
