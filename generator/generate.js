@@ -156,7 +156,14 @@ async function layerImages(sk, n) {
   // console.log("features: " + features)
   sk.saveCanvas(sk, filename, 'png');
   const output_json = JSON.stringify(features);
+  const dir = "./metadata/";
 
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+    console.log('Directory created!');
+  } else {
+    console.log('Directory already exists.');
+  }
   fs.writeFile("metadata/" + filename + ".json", output_json, 'utf8', (err) => {
     if (err) throw err;
     console.log('The metadarta has been saved!');

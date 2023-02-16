@@ -5,3 +5,4 @@ generator/*.png
 node_modules/*
 generator/node_modules/*
 *.png
+generator/metadata/*
