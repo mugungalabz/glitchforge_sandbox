@@ -152,9 +152,14 @@ async function layerImages(sk, n) {
     "Elements": overlay_val + thick_val,
     "Aether": thin_val + details_val,
   }
-  if (feature) {
-    features["Esper"] = feature
+  if (p(.5)) {
+    currFilepath = await applyRandomImage(sk, "features")
+    const aether_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    features["Esper"] = aether_val
   }
+  // if (feature) {
+  //   features["Esper"] = feature
+  // }
   metadata[filename] = features
   // console.log("features: " + features)
   sk.saveCanvas(sk, filename, 'png');
