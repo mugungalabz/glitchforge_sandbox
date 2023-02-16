@@ -137,20 +137,23 @@ async function layerImages(sk, n) {
   // sk.background(165, 165, 165)
   let currFilepath = await applyRandomImage(sk, "bg")
   const bg_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  await applyRandomImage(sk, "bg_overlay")
+  currFilepath = await applyRandomImage(sk, "bg_overlay")
   const overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  await applyRandomImage(sk, "thick")
+  currFilepath = await applyRandomImage(sk, "thick")
   const thick_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  await applyRandomImage(sk, "thin")
+  currFilepath = await applyRandomImage(sk, "thin")
   const thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  await applyRandomImage(sk, "details")
+  currFilepath = await applyRandomImage(sk, "details")
   const details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
   filename = "lostlvels" + n
   console.log("filename: " + filename)
   features = {
-    "bg": bg_val,
-    "bg_overlay": overlay_val + thick_val,
-    "thin": thin_val + details_val
+    "Level": bg_val,
+    "Elements": overlay_val + thick_val,
+    "Aether": thin_val + details_val,
+  }
+  if (feature) {
+    features["Esper"] = feature
   }
   metadata[filename] = features
   // console.log("features: " + features)
