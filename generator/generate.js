@@ -137,34 +137,46 @@ async function layerImages(sk, n) {
   features = {}
   // sk.background(165, 165, 165)
   let currFilepath = await applyRandomImage(sk, "bg")
-  const bg_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  let bg_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  bg_val = bg_val.replace(/_\d+.*$/, "")
   features['Level'] = bg_val
 
   if (p(.667)) {
     currFilepath = await applyRandomImage(sk, "bg_overlay")
-    const overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    let overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    overlay_val = overlay_val.replace(/_\d+.*$/, "")
     features['Elements'] = overlay_val
   }
   currFilepath = await applyRandomImage(sk, "thick")
-  const thick_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  if (!features['Elements']) features['Elements'] = ""
-  features['Elements'] += thick_val
+  let thick_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  thick_val = thick_val.replace(/_\d+.*$/, "")
+  if (!features['Elements']) {
+    features['Elements'] = thick_val
+  } else {
+    features['Elements'] += " " + thick_val
+  }
 
   if (p(.85)) {
     currFilepath = await applyRandomImage(sk, "thin")
-    const thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    let thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    thin_val = thin_val.replace(/_\d+.*$/, "")
     features['Aether'] = thin_val
   }
   if (p(.8)) {
     currFilepath = await applyRandomImage(sk, "details")
-    const details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-    if (!features['Aether']) features['Aether'] = ""
-    features['Aether'] += details_val
+    let details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    details_val = details_val.replace(/_\d+.*$/, "")
+    if (!features['Aether']) {
+      features['Aether'] = details_val
+    } else {
+      features['Aether'] += " " + details_val
+    }
   }
 
   if (p(.25)) {
     currFilepath = await applyRandomImage(sk, "features")
-    const aether_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    let aether_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    aether_val = aether_val.replace(/_\d+.*$/, "")
     features["Esper"] = aether_val
   }
   filename = "lostlvels" + n
