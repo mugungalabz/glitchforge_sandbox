@@ -134,32 +134,42 @@ async function applyRandomImage(sk, image_dir) {
 async function layerImages(sk, n) {
   sk.createCanvas(W, H);
   sk.clear();
+  features = {}
   // sk.background(165, 165, 165)
   let currFilepath = await applyRandomImage(sk, "bg")
   const bg_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  currFilepath = await applyRandomImage(sk, "bg_overlay")
-  const overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+  features['Level'] = bg_val
+
+  if (p(.667)) {
+    currFilepath = await applyRandomImage(sk, "bg_overlay")
+    const overlay_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    features['Elements'] = overlay_val
+  }
   currFilepath = await applyRandomImage(sk, "thick")
   const thick_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  currFilepath = await applyRandomImage(sk, "thin")
-  const thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  currFilepath = await applyRandomImage(sk, "details")
-  const details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
-  filename = "lostlvels" + n
-  console.log("filename: " + filename)
-  features = {
-    "Level": bg_val,
-    "Elements": overlay_val + thick_val,
-    "Aether": thin_val + details_val,
+  if (!features['Elements']) features['Elements'] = ""
+  features['Elements'] += thick_val
+
+  if (p(.85)) {
+    currFilepath = await applyRandomImage(sk, "thin")
+    const thin_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    features['Aether'] = thin_val
   }
+  if (p(.8)) {
+    currFilepath = await applyRandomImage(sk, "details")
+    const details_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
+    if (!features['Aether']) features['Aether'] = ""
+    features['Aether'] += details_val
+  }
+
   if (p(.25)) {
     currFilepath = await applyRandomImage(sk, "features")
     const aether_val = currFilepath.substring(currFilepath.lastIndexOf("/") + 1);
     features["Esper"] = aether_val
   }
-  // if (feature) {
-  //   features["Esper"] = feature
-  // }
+  filename = "lostlvels" + n
+  console.log("filename: " + filename)
+
   metadata[filename] = features
   // console.log("features: " + features)
   sk.saveCanvas(sk, filename, 'png');
